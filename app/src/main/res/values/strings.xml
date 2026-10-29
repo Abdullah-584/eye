@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FamilyGuard</string>
+
+    <string name="checking_session">Checking your session…</string>
+
+    <string name="account_title">Your account</string>
+    <string name="account_signed_in_as">Signed in as %1$s</string>
+    <string name="account_signed_in">Signed in</string>
+    <string name="account_ready">Your account is ready. Family setup arrives with the next build.</string>
+    <string name="sign_out">Sign out</string>
+
+    <!-- P1 mode chooser -->
+    <string name="mode_title">Who is using this device?</string>
+    <string name="mode_subtitle">You can change this later from Settings.</string>
+    <string name="mode_parent">I\'m a parent</string>
+    <string name="mode_child_device">I\'m setting up my child\'s device</string>
+
+    <!-- Bottom navigation shell -->
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_requests">Requests</string>
+    <string name="nav_settings">Settings</string>
+    <string name="requests_no_child">Add a child first to see their time requests.</string>
+</resources>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- PIN gate (P6/P18) -->
+    <string name="gate_title">Enter your parent PIN</string>
+    <string name="gate_title_setup">Choose a 6-digit PIN</string>
+    <string name="gate_title_confirm">Confirm your PIN</string>
+    <string name="gate_wrong_pin">Wrong PIN — %1$d attempts left</string>
+    <string name="gate_locked">Too many attempts. Try again in %1$d s</string>
+    <string name="gate_use_biometric">Use fingerprint</string>
+    <string name="gate_biometric_negative">Use PIN instead</string>
+    <string name="gate_pin_mismatch">PINs don\'t match. Start again.</string>
+    <string name="gate_pin_invalid">PIN must be exactly 6 digits.</string>
+    <string name="gate_protected">Parent mode is protected by a PIN.</string>
+
+    <!-- Settings (P17) -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_security">Security</string>
+    <string name="settings_change_pin">Change PIN</string>
+    <string name="settings_setup_pin">Set up PIN</string>
+    <string name="settings_pin_hint">A 6-digit PIN is required to reopen parent mode.</string>
+    <string name="settings_biometric">Unlock with fingerprint</string>
+    <string name="settings_data">Your data</string>
+    <string name="settings_export">Export my data</string>
+    <string name="settings_export_hint">Saves a JSON copy of everything stored for your family.</string>
+    <string name="settings_privacy">Privacy policy</string>
+    <string name="settings_consent">Consent record</string>
+    <string name="settings_consent_none">No consent recorded yet.</string>
+    <string name="settings_delete">Delete my family\'s data</string>
+    <string name="settings_delete_hint">Permanently deletes the account, family, children, devices, usage and location data.</string>
+    <string name="settings_delete_title">Delete everything?</string>
+    <string name="settings_delete_body">This permanently deletes the account and every row stored for this family. It cannot be undone.</string>
+    <string name="settings_delete_confirm">Delete</string>
+    <string name="settings_cancel">Cancel</string>
+    <string name="settings_sign_out">Sign out</string>
+    <string name="settings_privacy_body">FamilyGuard collects only what the family features need:\n\n• Device identifiers and pairing metadata.\n• Foreground app usage times on the child\'s device.\n• Coarse and precise location on the child\'s device.\n• Time requests sent by the child.\n• Blocked domain names (stored locally, never uploaded).\n\nWe never collect messages, calls, camera, microphone or browsing content. Data is encrypted in transit. You can export or delete everything from Settings at any time. There is no third-party analytics or advertising in this app.</string>
+    <string name="settings_dismiss">Dismiss</string>
+
+    <!-- Banners -->
+    <string name="settings_pin_saved">PIN saved.</string>
+    <string name="settings_export_ready">Export saved — sharing it now.</string>
+    <string name="settings_export_failed">Export failed. Try again later.</string>
+    <string name="settings_delete_failed">Deletion failed. Nothing was removed — try again later.</string>
+    <string name="settings_share_title">Share export</string>
+</resources>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_requests">Time requests</string>
+    <string name="requests_pending">Pending</string>
+    <string name="requests_history">History</string>
+    <string name="requests_empty">No requests right now.</string>
+    <string name="requests_no_history">No decided requests yet.</string>
+    <string name="requests_wants">%1$s asks for %2$s more minutes</string>
+    <string name="requests_reason">\"%1$s\"</string>
+    <string name="requests_approve">Approve %1$dm</string>
+    <string name="requests_deny">Deny</string>
+    <string name="requests_approved">Approved</string>
+    <string name="requests_denied">Denied</string>
+    <string name="requests_expired">Expired</string>
+    <string name="requests_device">Device: %1$s</string>
+    <string name="requests_failed">Decision failed</string>
+</resources>

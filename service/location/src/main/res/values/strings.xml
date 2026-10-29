@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="channel_location">Location</string>
+    <string name="channel_location_desc">Shown while this device shares its location with the family.</string>
+    <string name="notif_location_title">FamilyGuard location sharing</string>
+    <string name="notif_location_text">This device shares its location with the family.</string>
+</resources>

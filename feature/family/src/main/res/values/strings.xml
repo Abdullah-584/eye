@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- P4: create family -->
+    <string name="create_family_title">Create your family</string>
+    <string name="create_family_subtitle">FamilyGuard keeps rules inside one family. Nothing is collected before you consent.</string>
+    <string name="create_family_name_label">Family name</string>
+    <string name="create_family_consent">I have read the privacy notice and consent to FamilyGuard collecting my child’s screen time, app usage, and location for my family only.</string>
+    <string name="create_family_submit">Create family</string>
+    <string name="consent_policy_version">2026-01-01</string>
+
+    <!-- P5: add child -->
+    <string name="add_child_title">Add your child</string>
+    <string name="add_child_name_label">Child’s name</string>
+    <string name="add_child_birth_year_label">Birth year (optional)</string>
+    <string name="add_child_birth_year_error">Enter a 4-digit year</string>
+    <string name="add_child_timezone_label">Time zone</string>
+    <string name="add_child_submit">Add child</string>
+
+    <!-- P9: dashboard -->
+    <string name="dashboard_title">Dashboard</string>
+    <string name="dashboard_create_family">Create family</string>
+    <string name="dashboard_no_family">Create a family to start setting limits.</string>
+    <string name="dashboard_add_child">Add child</string>
+    <string name="dashboard_no_children">Add your child to start protecting them.</string>
+    <string name="dashboard_screen_time_today">Screen time today</string>
+    <string name="dashboard_device_health">Device health</string>
+    <string name="dashboard_no_device">No device paired yet.</string>
+    <string name="dashboard_last_seen">Last seen %1$s</string>
+    <string name="dashboard_never_seen">Not seen yet</string>
+    <string name="dashboard_requests_title">Time requests</string>
+    <string name="dashboard_requests_none">No waiting requests.</string>
+    <string name="dashboard_action_requests">Time requests</string>
+    <string name="dashboard_action_devices">Devices</string>
+    <string name="dashboard_action_rules">Rules</string>
+    <string name="dashboard_action_location">Location</string>
+    <string name="dashboard_action_reports">Reports</string>
+    <string name="dashboard_sync_live">Sync: live</string>
+    <string name="dashboard_sync_connecting">Sync: connecting…</string>
+    <string name="dashboard_sync_degraded">Sync: reconnecting…</string>
+    <string name="dashboard_sync_idle">Sync: offline changes only</string>
+    <plurals name="dashboard_requests_waiting">
+        <item quantity="one">%1$d request waiting</item>
+        <item quantity="other">%1$d requests waiting</item>
+    </plurals>
+
+    <!-- P16: devices -->
+    <string name="devices_title">Devices</string>
+    <string name="devices_empty">No devices paired yet.</string>
+    <string name="devices_refresh">Refresh</string>
+    <string name="devices_revoke">Revoke</string>
+    <string name="devices_pair">Pair a new device</string>
+    <string name="devices_revoke_confirm_title">Revoke this device?</string>
+    <string name="devices_revoke_confirm_message">The device stops syncing immediately and must be paired again to come back.</string>
+    <string name="devices_cancel">Cancel</string>
+    <string name="device_status_active">Active</string>
+    <string name="device_status_pending">Waiting to pair</string>
+    <string name="device_status_revoked">Revoked</string>
+
+    <string name="family_banner_dismiss">Dismiss</string>
+</resources>

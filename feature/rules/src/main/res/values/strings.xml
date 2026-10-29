@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_rules">Rules</string>
+    <string name="tab_apps">Apps</string>
+    <string name="tab_schedule">Schedule</string>
+    <string name="tab_web">Web</string>
+
+    <string name="apps_add">Add app limit</string>
+    <string name="apps_picker_title">Choose an app</string>
+    <string name="apps_search">Search apps</string>
+    <string name="apps_daily_limit">Daily limit</string>
+    <string name="apps_hours">%1$dh %2$dm</string>
+    <string name="apps_block_entirely">Block entirely</string>
+    <string name="apps_enabled">Limit on</string>
+    <string name="apps_delete">Remove limit</string>
+    <string name="apps_empty">No app limits yet. Add one to start limiting screen time.</string>
+    <string name="apps_saved">Limit saved</string>
+    <string name="apps_failed">Could not save the limit</string>
+
+    <string name="schedule_add">Add schedule</string>
+    <string name="schedule_name">Name (Bedtime, School…)</string>
+    <string name="schedule_start">Start (HH:mm)</string>
+    <string name="schedule_end">End (HH:mm)</string>
+    <string name="schedule_days">Days</string>
+    <string name="schedule_enabled">Active</string>
+    <string name="schedule_delete">Delete schedule</string>
+    <string name="schedule_save">Save</string>
+    <string name="schedule_empty">No schedules yet — add a bedtime window.</string>
+    <string name="schedule_bad_time">Times must look like 21:00</string>
+    <string name="schedule_saved">Schedule saved</string>
+
+    <string name="web_mode">Mode</string>
+    <string name="web_blocklist">Block these sites</string>
+    <string name="web_allowlist">Only allow these sites</string>
+    <string name="web_categories">Categories</string>
+    <string name="web_domains">Custom domains</string>
+    <string name="web_add_domain">Add domain</string>
+    <string name="web_resolver">Resolver</string>
+    <string name="web_resolver_dns">Safe DNS (recommended)</string>
+    <string name="web_resolver_local">Local blocklist</string>
+    <string name="web_save">Save web rules</string>
+    <string name="web_saved">Web rules saved</string>
+    <string name="web_hint">One domain per entry, e.g. example.com</string>
+</resources>

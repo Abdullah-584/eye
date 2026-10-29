@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sign_in_title">Sign in</string>
+    <string name="sign_in_button">Sign in</string>
+    <string name="sign_up_title">Create your account</string>
+    <string name="sign_up_button">Create account</string>
+    <string name="create_account_link">New here? Create an account</string>
+    <string name="join_device_link">Setting up my child\'s device</string>
+    <string name="have_account_link">Already have an account? Sign in</string>
+
+    <string name="field_display_name_label">Your name</string>
+    <string name="field_email_label">Email</string>
+    <string name="field_password_label">Password</string>
+
+    <string name="checking_session">Checking your session…</string>
+
+    <string name="confirmation_title">Confirm your email</string>
+    <string name="confirmation_body">We sent a link to %1$s. Open it on this device, then come back and sign in.</string>
+    <string name="confirmation_back">Back to sign in</string>
+
+    <string name="dismiss">Dismiss</string>
+
+    <!-- Field validation -->
+    <string name="error_display_name_required">Enter your name</string>
+    <string name="error_display_name_too_long">Names can be up to 60 characters</string>
+    <string name="error_email_required">Enter your email address</string>
+    <string name="error_email_invalid">That doesn\'t look like an email address</string>
+    <string name="error_email_too_long">That email address is too long</string>
+    <string name="error_password_required">Enter a password</string>
+    <string name="error_password_too_short">Use at least 8 characters</string>
+    <string name="error_password_missing_letter">Add at least one letter</string>
+    <string name="error_password_missing_digit">Add at least one number</string>
+
+    <!-- Banners: one per ErrorKind, so no raw server text is ever shown -->
+    <string name="error_banner_network">Could not reach FamilyGuard. Check your connection and try again.</string>
+    <string name="error_banner_timeout">The request timed out. Please try again.</string>
+    <string name="error_banner_invalid_credentials">Email or password is incorrect.</string>
+    <string name="error_banner_email_taken">An account with that email already exists. Try signing in instead.</string>
+    <string name="error_banner_email_unconfirmed">Confirm your email address first — we sent you a link.</string>
+    <string name="error_banner_weak_password">Choose a stronger password.</string>
+    <string name="error_banner_rate_limited">Too many attempts. Wait a minute and try again.</string>
+    <string name="error_banner_not_configured">This build is missing its Supabase settings. See the README.</string>
+    <string name="error_banner_unknown">Something went wrong. Please try again.</string>
+</resources>

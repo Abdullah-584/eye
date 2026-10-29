@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_child_home">Home</string>
+    <string name="child_banner_dismiss">Dismiss</string>
+    <string name="title_child_rules">My rules</string>
+    <string name="title_child_privacy">What my parents see</string>
+    <string name="title_request_time">Ask for more time</string>
+
+    <string name="protection_on">Protection is ON</string>
+    <string name="protection_on_hint">Your parents\' rules keep this device safe.</string>
+    <string name="home_screen_left">Screen time left today</string>
+    <string name="home_bedtime">Bedtime</string>
+    <string name="home_blocked_sites">Blocked sites</string>
+    <string name="home_no_bedtime">No bedtime tonight</string>
+    <string name="home_unlimited">Unlimited</string>
+
+    <string name="rules_intro">What your parents set up for this device</string>
+    <string name="rules_section_apps">Apps</string>
+    <string name="rules_section_schedule">Schedule</string>
+    <string name="rules_section_web">Websites</string>
+    <string name="rules_allowlist_mode">Allowed sites only</string>
+    <string name="rules_blocklist_mode">Blocked sites</string>
+    <string name="rules_allow">Allow</string>
+    <string name="rules_block">Block</string>
+    <string name="rules_allowlist_info">Only the sites below are allowed while browsing.</string>
+    <string name="rules_blocklist_info">These sites are blocked while browsing.</string>
+    <string name="rules_categories">Categories: %1$s</string>
+    <string name="rules_empty">No rules yet</string>
+
+    <string name="privacy_intro">Here is exactly what your parents can see on this device — nothing more.</string>
+    <string name="privacy_row_location">Live location</string>
+    <string name="privacy_row_location_desc">Your current position, shared while protection is on.</string>
+    <string name="privacy_row_screen">Screen time</string>
+    <string name="privacy_row_screen_desc">Which apps you use and for how long, per day.</string>
+    <string name="privacy_row_blocked">App blocks</string>
+    <string name="privacy_row_blocked_desc">Which apps were blocked and why.</string>
+    <string name="privacy_row_devices">This device</string>
+    <string name="privacy_row_devices_desc">Device name, battery and last check-in.</string>
+    <string name="privacy_not_seeing">Your parents never see: keystrokes, passwords, photos, messages or anything you type.</string>
+
+    <string name="request_title">Ask for more time</string>
+    <string name="request_minutes">Extra minutes</string>
+    <string name="request_reason">Message to your parent (optional)</string>
+    <string name="request_send">Send request</string>
+    <string name="request_sending">Sending…</string>
+    <string name="request_sent">Request sent! Your parent will decide.</string>
+    <string name="request_pending">Waiting for your parent…</string>
+    <string name="request_back_home">Done</string>
+    <string name="request_denied">Your parent did not approve this request.</string>
+    <string name="request_granted">Approved! The extra time is already added.</string>
+</resources>

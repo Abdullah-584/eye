@@ -1,0 +1,16 @@
+# ---------------------------------------------------------------------------
+# Copy this file to `local.properties` (which is git-ignored) and fill in the
+# values from your Supabase project:  Settings -> API
+#
+#   SUPABASE_URL       e.g. https://abcdefgh.supabase.co
+#   SUPABASE_ANON_KEY  the "anon public" key — safe to ship in an APK because
+#                      Postgres Row Level Security is the real boundary.
+#
+# NEVER put the service_role key here or anywhere in this repository. It lives
+# only in Supabase Edge Function secrets (see README.md).
+#
+# sdk.dir is written automatically by Android Studio; on CI it comes from the
+# ANDROID_HOME environment variable.
+# ---------------------------------------------------------------------------
+SUPABASE_URL=
+SUPABASE_ANON_KEY=

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Compose draws everything; this only styles the window before the first
+         frame and while the splash screen is showing. -->
+    <style name="Theme.FamilyGuard" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>

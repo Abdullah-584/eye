@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_location">Location</string>
+    <string name="location_none">No location yet</string>
+    <string name="location_none_hint">The child device reports a fix while protection is on.</string>
+    <string name="location_ago">Located %1$s ago</string>
+    <string name="location_accuracy">Accuracy ±%1$dm</string>
+    <string name="location_battery">Battery %1$d%%</string>
+    <string name="location_refresh">Refresh</string>
+    <string name="location_coords">%1$.5f, %2$.5f</string>
+    <string name="location_just_now">less than a minute</string>
+    <string name="location_minutes">%1$d min</string>
+    <string name="location_hours">%1$d h</string>
+</resources>

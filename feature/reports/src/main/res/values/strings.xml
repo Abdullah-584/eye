@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_reports">Reports</string>
+    <string name="reports_range_7">7 days</string>
+    <string name="reports_range_30">30 days</string>
+    <string name="reports_daily">Daily screen time</string>
+    <string name="reports_per_app">Per app</string>
+    <string name="reports_pickups">Pickups</string>
+    <string name="reports_most_used">Most used day</string>
+    <string name="reports_empty">No usage data yet — data appears after the child device reports.</string>
+    <string name="reports_refresh">Refresh</string>
+    <string name="reports_total">Total: %1$s</string>
+    <string name="reports_table_app">App</string>
+    <string name="reports_table_time">Time</string>
+    <string name="reports_table_pickups">Pickups</string>
+</resources>

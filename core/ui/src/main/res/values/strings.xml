@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      User-facing copies for ErrorKind, shared by every feature screen.
+
+      These are deliberately prefixed `banner_error_`: feature:onboarding has
+      its own auth-specific `error_banner_*` set, and two library modules
+      cannot declare the same resource name.
+    -->
+    <string name="banner_error_network">Could not reach FamilyGuard. Check your connection and try again.</string>
+    <string name="banner_error_timeout">The request timed out. Please try again.</string>
+    <string name="banner_error_invalid_credentials">Email or password is incorrect.</string>
+    <string name="banner_error_email_taken">An account with that email already exists. Try signing in instead.</string>
+    <string name="banner_error_email_unconfirmed">Confirm your email address first — we sent you a link.</string>
+    <string name="banner_error_weak_password">Choose a stronger password.</string>
+    <string name="banner_error_rate_limited">Too many attempts. Wait a minute and try again.</string>
+    <string name="banner_error_not_configured">This build is missing its Supabase settings. See the README.</string>
+    <string name="banner_error_unknown">Something went wrong. Please try again.</string>
+</resources>

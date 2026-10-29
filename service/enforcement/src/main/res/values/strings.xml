@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="channel_enforcement">Enforcement</string>
+    <string name="channel_enforcement_desc">Shown while FamilyGuard is actively enforcing screen-time rules on this device.</string>
+    <string name="notif_enforcement_title">FamilyGuard is active</string>
+    <string name="notif_enforcement_text">%1$d rules currently enforced</string>
+</resources>

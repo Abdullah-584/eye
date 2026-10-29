@@ -1,0 +1,28 @@
+# Gradle
+.gradle/
+build/
+local.properties
+
+# Android / IDE
+*.iml
+.idea/
+.kotlin/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Signing & secrets: never commit these
+*.jks
+*.keystore
+*.p12
+.env
+.env.*
+supabase/.env
+supabase/.temp/
+
+# Node (only used by optional local tooling)
+node_modules/
+
+# Misc
+.DS_Store
+*.log

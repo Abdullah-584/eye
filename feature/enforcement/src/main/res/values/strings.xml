@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="blocked_title">This app is blocked</string>
+    <string name="blocked_schedule">It\'s time for a break — your parent set a schedule.</string>
+    <string name="blocked_limit">You\'ve used up today\'s time for this app.</string>
+    <string name="blocked_app">Your parent blocked this app.</string>
+    <string name="blocked_back_home">Go to home</string>
+    <string name="blocked_ask">Ask for more time</string>
+    <string name="blocked_schedule_label">Schedule: %1$s</string>
+    <string name="blocked_limit_label">Limit: %1$s / day</string>
+</resources>
