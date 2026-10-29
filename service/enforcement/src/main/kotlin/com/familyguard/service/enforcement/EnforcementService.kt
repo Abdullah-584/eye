@@ -17,8 +17,7 @@ import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
-import com.familyguard.core.data.mode.AppMode
-import com.familyguard.core.data.mode.ModeRepository
+import com.familyguard.core.data.mode.ChildDeviceRepository
 import com.familyguard.core.data.sync.SyncEngine
 import com.familyguard.core.domain.enforcement.AppLimitView
 import com.familyguard.core.domain.enforcement.BlockReason
@@ -60,12 +59,13 @@ import javax.inject.Inject
  *  5. heartbeat every 60 s so the parent's "device not reporting" card can
  *     tell the truth (PLAN §7.5: stale > 15 min).
  *
- * Runs only while the install is in CHILD mode; any other mode stops it.
+ * Runs only while this install is paired to a child; an unpaired install
+ * stops itself the moment it is started.
  */
 @AndroidEntryPoint
 class EnforcementService : LifecycleService() {
 
-    @Inject lateinit var modeRepository: ModeRepository
+    @Inject lateinit var childDevice: ChildDeviceRepository
     @Inject lateinit var rulesRepository: RulesRepository
     @Inject lateinit var usageRepository: UsageRepository
     @Inject lateinit var pairingRepository: PairingRepository
@@ -129,12 +129,10 @@ class EnforcementService : LifecycleService() {
         jobsStarted = true
 
         serviceScope.launch {
-            if (modeRepository.currentMode() != AppMode.CHILD) {
-                stopSelf()
-                return@launch
-            }
-            val child = modeRepository.childIdOrNull()
-            val device = modeRepository.deviceIdOrNull()
+            // No mode flag any more: paired or not, and paired is the only
+            // reason this service exists.
+            val child = childDevice.childIdOrNull()
+            val device = childDevice.deviceIdOrNull()
             if (child == null || device == null) {
                 stopSelf()
                 return@launch

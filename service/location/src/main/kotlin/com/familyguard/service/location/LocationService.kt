@@ -20,8 +20,7 @@ import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
-import com.familyguard.core.data.mode.AppMode
-import com.familyguard.core.data.mode.ModeRepository
+import com.familyguard.core.data.mode.ChildDeviceRepository
 import com.familyguard.core.domain.model.LocationFix
 import com.familyguard.core.domain.repo.LocationRepository
 import dagger.hilt.android.AndroidEntryPoint
@@ -36,14 +35,14 @@ import javax.inject.Inject
 /**
  * PLAN P13 — the location foreground service: a plain `LocationManager`
  * listener (no play-services dependency) that records a fix every ~60 s /
- * 50 m while the device is in CHILD mode, feeds the offline queue and
+ * 50 m while this device is paired to a child, feeds the offline queue and
  * flushes periodically. The child-mode walkthrough explains this service in
  * the prominent disclosure before the permission is requested.
  */
 @AndroidEntryPoint
 class LocationService : LifecycleService() {
 
-    @Inject lateinit var modeRepository: ModeRepository
+    @Inject lateinit var childDevice: ChildDeviceRepository
     @Inject lateinit var locationRepository: LocationRepository
 
     private val serviceScope = CoroutineScope(SupervisorJob())
@@ -91,12 +90,8 @@ class LocationService : LifecycleService() {
         jobsStarted = true
 
         serviceScope.launch {
-            if (modeRepository.currentMode() != AppMode.CHILD) {
-                stopSelf()
-                return@launch
-            }
-            val child = modeRepository.childIdOrNull()
-            val device = modeRepository.deviceIdOrNull()
+            val child = childDevice.childIdOrNull()
+            val device = childDevice.deviceIdOrNull()
             if (child == null || device == null) {
                 stopSelf()
                 return@launch

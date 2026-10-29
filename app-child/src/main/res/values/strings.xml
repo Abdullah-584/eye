@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Deliberately descriptive, never disguised (PLAN-SPLIT §6.1). -->
+    <string name="app_name">FamilyGuard Child</string>
+</resources>

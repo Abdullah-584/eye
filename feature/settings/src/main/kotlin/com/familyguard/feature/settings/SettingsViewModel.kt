@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.familyguard.core.common.AppResult
-import com.familyguard.core.data.mode.ModeRepository
 import com.familyguard.core.domain.auth.AuthRepository
 import com.familyguard.core.domain.model.AuditEntry
 import com.familyguard.core.domain.repo.AccountRepository
@@ -46,7 +45,6 @@ class SettingsViewModel @Inject constructor(
     private val familyRepository: FamilyRepository,
     private val accountRepository: AccountRepository,
     private val pinStore: PinStore,
-    private val modeRepository: ModeRepository,
 ) : ViewModel() {
 
     private val mutable = MutableStateFlow(SettingsUiState())
@@ -132,7 +130,6 @@ class SettingsViewModel @Inject constructor(
         when (val result = accountRepository.deleteAccount()) {
             is AppResult.Success -> {
                 pinStore.clear()
-                modeRepository.reset()
                 authRepository.signOut()
                 // The root NavHost reacts to SIGNED_OUT and drops back to
                 // sign-in; nothing left to update here.

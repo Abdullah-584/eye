@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_join">Set up this device</string>
+    <string name="join_intro">Enter the 6-digit code shown on your parent\'s device to link this phone.</string>
+    <string name="join_code">6-digit code</string>
+    <string name="join_device_name">Device name</string>
+    <string name="join_submit">Connect</string>
+    <string name="join_connecting">Connecting…</string>
+    <string name="join_privacy_title">What this device shares</string>
+    <string name="join_privacy_body">Screen time per app, location while protection is on, blocked-site attempts and time requests. Nothing else — your parent sees this too, in \"What my parents see\".</string>
+    <string name="join_success">Linked! Ask your parent for the next step.</string>
+    <string name="join_invalid_code">That code was not accepted. Check the digits and try again.</string>
+</resources>

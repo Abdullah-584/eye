@@ -35,25 +35,46 @@ jobs:
       - name: Unit tests
         run: ./gradlew --no-daemon test
 
-      - name: Assemble debug APK
-        run: ./gradlew --no-daemon :app:assembleDebug
+      # Both apps must lint clean (PLAN-SPLIT §7 M0).
+      - name: Lint both apps
+        run: ./gradlew --no-daemon :app-parent:lintDebug :app-child:lintDebug
+
+      # Two apps, one library set (PLAN-SPLIT §2): both must build.
+      - name: Assemble debug APKs
+        run: ./gradlew --no-daemon :app-parent:assembleDebug :app-child:assembleDebug
 
       # Belt and braces for M1's "no service_role anywhere in the APK".
-      - name: Assert no service_role key in the APK
+      - name: Assert no service_role key in either APK
         run: |
           set -euo pipefail
-          if unzip -p app/build/outputs/apk/debug/app-debug.apk 'classes*.dex' \
-              | strings | grep -q 'service_role'; then
-            echo "::error::service_role found in the debug APK"
+          for apk in app-parent/build/outputs/apk/debug/app-parent-debug.apk \
+                     app-child/build/outputs/apk/debug/app-child-debug.apk; do
+            if unzip -p "$apk" 'classes*.dex' | strings | grep -q 'service_role'; then
+              echo "::error::service_role found in $apk"
+              exit 1
+            fi
+            echo "no service_role in $apk"
+          done
+
+      - name: Assert the child app carries no account/auth UI
+        run: |
+          set -euo pipefail
+          ./gradlew -q :app-child:dependencies --configuration debugRuntimeClasspath \
+            > /tmp/child-deps.txt
+          # The child app must never be able to create a parent account.
+          if grep -q ':feature:onboarding' /tmp/child-deps.txt; then
+            echo "::error:::app-child must not depend on :feature:onboarding"
             exit 1
           fi
-          echo "no service_role in the APK"
+          echo "child app has no onboarding/sign-up surface"
 
-      - name: Upload debug APK
+      - name: Upload debug APKs
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: apk-debug
+          path: |
+            app-parent/build/outputs/apk/debug/*.apk
+            app-child/build/outputs/apk/debug/*.apk
           if-no-files-found: error
 
   rls-tests:

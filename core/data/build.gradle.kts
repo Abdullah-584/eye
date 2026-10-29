@@ -44,7 +44,8 @@ dependencies {
     // Entities and FamilyGuardDatabase expose Room types in their signatures.
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
-    // AppModeStore keeps parent/child mode in Preferences DataStore.
+    // ChildDeviceStore keeps the pairing (child id / device id) in a
+    // Preferences DataStore; the parent app never writes it.
     implementation(libs.androidx.datastore.preferences)
 
     implementation(libs.kotlinx.serialization.json)

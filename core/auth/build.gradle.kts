@@ -39,7 +39,8 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.core)
 
-    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    // No :androidx.lifecycle.viewmodel.ktx — AuthViewModel moved to
+    // :feature:onboarding in the two-app split (PLAN-SPLIT §2.3).
 
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)

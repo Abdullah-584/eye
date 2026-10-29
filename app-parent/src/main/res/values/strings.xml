@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FamilyGuard</string>
+
+    <string name="checking_session">Checking your session…</string>
+
+    <!-- Bottom navigation shell -->
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_requests">Requests</string>
+    <string name="nav_settings">Settings</string>
+    <string name="requests_no_child">Add a child first to see their time requests.</string>
+</resources>

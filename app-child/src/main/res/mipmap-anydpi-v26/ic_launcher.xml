@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Adaptive icon, XML only (minSdk 26 means anydpi-v26 covers every device).
+     The child app's icon is visibly different from the parent app's and is
+     never hidden, aliased or replaced with a decoy (PLAN-SPLIT §6.1). -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@drawable/ic_launcher_background" />
+    <foreground android:drawable="@drawable/ic_launcher_foreground" />
+</adaptive-icon>

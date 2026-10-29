@@ -23,7 +23,8 @@ dependencyResolutionManagement {
 rootProject.name = "FamilyGuard"
 
 include(
-    ":app",
+    ":app-parent",
+    ":app-child",
     ":core:common",
     ":core:ui",
     ":core:domain",
@@ -35,6 +36,7 @@ include(
     ":feature:onboarding",
     ":feature:family",
     ":feature:pairing",
+    ":feature:join",
     ":feature:rules",
     ":feature:reports",
     ":feature:location",

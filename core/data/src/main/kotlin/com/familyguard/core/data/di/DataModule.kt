@@ -3,7 +3,7 @@ package com.familyguard.core.data.di
 import android.content.Context
 import androidx.room.Room
 import com.familyguard.core.database.FamilyGuardDatabase
-import com.familyguard.core.data.mode.AppModeStore
+import com.familyguard.core.data.mode.ChildDeviceStore
 import com.familyguard.core.data.repo.AccountRepositoryImpl
 import com.familyguard.core.data.repo.FamilyRepositoryImpl
 import com.familyguard.core.data.repo.LocationRepositoryImpl
@@ -38,7 +38,8 @@ object DataModule {
 
     @Provides
     @Singleton
-    fun provideModeStore(@ApplicationContext context: Context): AppModeStore = AppModeStore(context)
+    fun provideChildDeviceStore(@ApplicationContext context: Context): ChildDeviceStore =
+        ChildDeviceStore(context)
 
     @Provides
     fun provideFamilyRepository(impl: FamilyRepositoryImpl): FamilyRepository = impl

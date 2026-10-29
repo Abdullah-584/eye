@@ -3,7 +3,7 @@ package com.familyguard.feature.childhub
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.familyguard.core.common.AppResult
-import com.familyguard.core.data.mode.ModeRepository
+import com.familyguard.core.data.mode.ChildDeviceRepository
 import com.familyguard.core.domain.enforcement.AppLimitView
 import com.familyguard.core.domain.enforcement.LimitEvaluator
 import com.familyguard.core.domain.enforcement.ScheduleEvaluator
@@ -67,7 +67,7 @@ data class ChildUiState(
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class ChildViewModel @Inject constructor(
-    private val modeRepository: ModeRepository,
+    private val childDevice: ChildDeviceRepository,
     private val rulesRepository: RulesRepository,
     private val usageRepository: UsageRepository,
     private val timeRequests: TimeRequestRepository,
@@ -79,7 +79,7 @@ class ChildViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val childId = modeRepository.childIdOrNull() ?: return@launch
+            val childId = childDevice.childIdOrNull() ?: return@launch
             // Pull the latest rules + our requests once when the hub opens;
             // the sync engine keeps the store fresh afterwards.
             rulesRepository.refresh(childId)
@@ -87,7 +87,7 @@ class ChildViewModel @Inject constructor(
         }
     }
 
-    val state: StateFlow<ChildUiState> = modeRepository.childId
+    val state: StateFlow<ChildUiState> = childDevice.childId
         .flatMapLatest { childId ->
             if (childId == null) {
                 flowOf(ChildUiState(loading = false))
@@ -142,7 +142,7 @@ class ChildViewModel @Inject constructor(
     /** C5: create a `time_requests` row the parent sees and decides on. */
     fun requestMoreTime(minutes: Int, reason: String?) = viewModelScope.launch {
         val childId = state.value.childId ?: return@launch
-        val deviceId = modeRepository.deviceIdOrNull() ?: return@launch
+        val deviceId = childDevice.deviceIdOrNull() ?: return@launch
         val mins = minutes.coerceIn(1, 240)
         busy.value = true
         when (
