@@ -1,5 +1,6 @@
 package com.familyguard.core.domain.repo
 
+import com.familyguard.core.domain.model.AdminEvent
 import com.familyguard.core.domain.model.AppLimit
 import com.familyguard.core.domain.model.AuditEntry
 import com.familyguard.core.domain.model.Child
@@ -78,6 +79,40 @@ interface TimeRequestRepository {
     suspend fun decide(requestId: String, approve: Boolean, grantedSeconds: Int?): AppResult<TimeRequest>
 
     suspend fun refresh(childId: String): AppResult<List<TimeRequest>>
+}
+
+/** M2c — parent-initiated uninstall requests. Only the parent can create them; the child may only update their status. */
+interface UninstallRequestRepository {
+
+    /** Parent inbox: requests for [childId], newest first. */
+    fun observeRequests(childId: String): Flow<List<UninstallRequest>>
+
+    /** Parent-side pull (also the realtime fallback). */
+    suspend fun refresh(childId: String): AppResult<List<UninstallRequest>>
+
+    /** Parent taps a request status; only parent can change status. */
+    suspend fun decide(requestId: String, approved: Boolean): AppResult<Unit>
+}
+
+/** M2a — device-admin state alerts. The child device *reports* the truth it
+ * observes; the parent only reads and acknowledges (RLS is the authority):
+ */
+interface AdminEventRepository {
+
+    /**
+     * Device-side: record the admin transition we just detected. [enabled]
+     * false → `admin_disabled` (parent alert), true → `admin_reenabled`.
+     */
+    suspend fun report(childId: String, deviceId: String, enabled: Boolean): AppResult<Unit>
+
+    /** Parent inbox: alerts for [childId], newest first. */
+    fun observe(childId: String): Flow<List<AdminEvent>>
+
+    /** Parent-side pull (also the realtime fallback). */
+    suspend fun refresh(childId: String): AppResult<Int>
+
+    /** Parent taps "Got it": stamps `parent_ack_at`. Read-only for children. */
+    suspend fun acknowledge(eventId: String): AppResult<Unit>
 }
 
 interface UsageRepository {

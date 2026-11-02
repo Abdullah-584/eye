@@ -10,6 +10,17 @@ import kotlinx.serialization.json.JsonObject
  */
 
 @Serializable
+data class AdminEventDto(
+    val id: String,
+    @SerialName("child_id") val childId: String,
+    @SerialName("device_id") val deviceId: String,
+    @SerialName("event_type") val eventType: String,
+    @SerialName("occurred_at") val occurredAt: String,
+    @SerialName("parent_ack_at") val parentAckAt: String? = null,
+    @SerialName("created_at") val createdAt: String = "",
+)
+
+@Serializable
 data class FamilyDto(
     val id: String,
     val name: String,
@@ -126,6 +137,52 @@ data class LocationDto(
     @SerialName("accuracy_m") val accuracyM: Float? = null,
     @SerialName("battery_pct") val batteryPct: Int? = null,
     @SerialName("recorded_at") val recordedAt: String,
+)
+
+/**
+ * M2b — one row of the device-reported inventory. Unique on
+ * (device_id, package_name); `removed_at` null means currently installed.
+ */
+@Serializable
+data class InstalledAppDto(
+    @SerialName("child_id") val childId: String,
+    @SerialName("device_id") val deviceId: String,
+    @SerialName("package_name") val packageName: String,
+    @SerialName("app_name") val appName: String = "",
+    @SerialName("is_system") val isSystem: Boolean = false,
+    @SerialName("version_name") val versionName: String? = null,
+    val launchable: Boolean = true,
+    @SerialName("icon_sha") val iconSha: String? = null,
+    @SerialName("first_seen") val firstSeen: String = "",
+    @SerialName("last_seen") val lastSeen: String = "",
+    @SerialName("removed_at") val removedAt: String? = null,
+)
+
+/**
+ * M2b — the parent's block intent. Unique on (child_id, package_name);
+ * `version` is bumped by the server touch trigger for LWW ordering.
+ */
+@Serializable
+data class BlockedAppDto(
+    @SerialName("child_id") val childId: String,
+    @SerialName("package_name") val packageName: String,
+    val blocked: Boolean = true,
+    val version: Int = 1,
+    @SerialName("updated_by") val updatedBy: String? = null,
+    @SerialName("updated_at") val updatedAt: String = "",
+)
+
+/** M2c — one uninstall request row, mirroring the server table columns. */
+@Serializable
+data class UninstallRequestDto(
+    @SerialName("child_id") val childId: String,
+    @SerialName("package_name") val packageName: String,
+    @SerialName("app_name") val appName: String = "",
+    @SerialName("requested_by") val requestedBy: String,
+    val status: String = "pending",
+    @SerialName("result_message") val resultMessage: String? = null,
+    @SerialName("created_at") val createdAt: String = "",
+    @SerialName("updated_at") val updatedAt: String = "",
 )
 
 @Serializable

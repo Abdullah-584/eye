@@ -14,4 +14,16 @@
     <string name="requests_expired">Expired</string>
     <string name="requests_device">Device: %1$s</string>
     <string name="requests_failed">Decision failed</string>
+
+    <!-- M2c: uninstall request strings -->
+    <string name="requests_uninstall_pending">Pending uninstall requests</string>
+    <string name="requests_uninstall_empty">No pending uninstall requests</string>
+    <string name="requests_uninstall_confirm">Confirm</string>
+    <string name="requests_uninstall_decline">Decline</string>
+
+    <!-- M2a: device-admin tamper alerts -->
+    <string name="admin_alerts_title">Attention</string>
+    <string name="admin_alert_disabled">Protection was turned OFF on device %1$s</string>
+    <string name="admin_alert_reenabled">Protection was turned back ON on device %1$s</string>
+    <string name="admin_alert_ack">Got it</string>
 </resources>

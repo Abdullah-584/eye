@@ -1,0 +1,6 @@
+resource-id="android:id/content"
+text="Located 20 h ago"
+text="37.42200, -122.08400"
+text="Accuracy ±5m"
+text="Refresh"
+text="Location"

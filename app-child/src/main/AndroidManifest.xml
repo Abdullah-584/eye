@@ -7,6 +7,18 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
+    <!-- M2b package visibility: queryIntentActivities(ACTION_MAIN +
+         CATEGORY_LAUNCHER) needs this on Android 11+ or it returns only our
+         own package. QUERY_ALL_PACKAGES is deliberately NOT requested — it
+         triggers Play policy review and the launcher-intent query covers the
+         product requirement (docs/M2b-PLAN.md §2.1). -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+    </queries>
+
     <!-- Deliberately undisguised: a real icon, the real name, a launcher
          entry and no hiding from recents (PLAN-SPLIT §6.1/§6.5). -->
     <application

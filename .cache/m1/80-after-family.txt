@@ -1,0 +1,6 @@
+resource-id="android:id/content"
+text="Create your family"
+text="FamilyGuard keeps rules inside one family. Nothing is collected before you consent."
+text="EmuFamily"
+text="Family name"
+text="I have read the privacy notice and consent to FamilyGuard collecting my child’s screen time, app usage, and location for my family only."

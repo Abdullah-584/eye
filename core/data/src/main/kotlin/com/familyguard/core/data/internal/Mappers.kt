@@ -1,28 +1,37 @@
 package com.familyguard.core.data.internal
 
+import com.familyguard.core.database.entity.AdminEventEntity
 import com.familyguard.core.database.entity.AppLimitEntity
+import com.familyguard.core.database.entity.BlockedAppEntity
 import com.familyguard.core.database.entity.ChildEntity
 import com.familyguard.core.database.entity.DeviceEntity
 import com.familyguard.core.database.entity.FamilyEntity
+import com.familyguard.core.database.entity.InstalledAppEntity
 import com.familyguard.core.database.entity.LocationEntity
 import com.familyguard.core.database.entity.ScheduleEntity
 import com.familyguard.core.database.entity.TimeRequestEntity
 import com.familyguard.core.database.entity.WebFilterEntity
+import com.familyguard.core.data.dto.AdminEventDto
+import com.familyguard.core.data.dto.AppLimitDto
 import com.familyguard.core.data.dto.AuditDto
+import com.familyguard.core.data.dto.BlockedAppDto
 import com.familyguard.core.data.dto.ChildDto
 import com.familyguard.core.data.dto.DeviceDto
 import com.familyguard.core.data.dto.FamilyDto
+import com.familyguard.core.data.dto.InstalledAppDto
 import com.familyguard.core.data.dto.LocationDto
-import com.familyguard.core.data.dto.AppLimitDto
 import com.familyguard.core.data.dto.ScheduleDto
 import com.familyguard.core.data.dto.TimeRequestDto
 import com.familyguard.core.data.dto.WebFilterDto
+import com.familyguard.core.domain.model.AdminEvent
+import com.familyguard.core.domain.model.AppBlock
 import com.familyguard.core.domain.model.AppLimit
 import com.familyguard.core.domain.model.AuditEntry
 import com.familyguard.core.domain.model.Child
 import com.familyguard.core.domain.model.Device
 import com.familyguard.core.domain.model.DeviceStatus
 import com.familyguard.core.domain.model.Family
+import com.familyguard.core.domain.model.InstalledApp
 import com.familyguard.core.domain.model.Schedule
 import com.familyguard.core.domain.model.ScheduleAction
 import com.familyguard.core.domain.model.TimeRequest
@@ -138,7 +147,37 @@ fun WebFilter.toDto() = WebFilterDto(
     updatedAt = updatedAt,
 )
 
+fun AdminEventDto.toDomain() = AdminEvent(
+    id = id,
+    childId = childId,
+    deviceId = deviceId,
+    eventType = eventType,
+    occurredAt = occurredAt,
+    parentAckAt = parentAckAt,
+    createdAt = createdAt,
+)
+
 // ---------------- DTO -> entity (Room cache of a fetched row) ----------------
+
+fun AdminEventDto.toEntity() = AdminEventEntity(
+    id = id,
+    childId = childId,
+    deviceId = deviceId,
+    eventType = eventType,
+    occurredAt = occurredAt,
+    parentAckAt = parentAckAt,
+    createdAt = createdAt,
+)
+
+fun AdminEventEntity.toDomain() = AdminEvent(
+    id = id,
+    childId = childId,
+    deviceId = deviceId,
+    eventType = eventType,
+    occurredAt = occurredAt,
+    parentAckAt = parentAckAt,
+    createdAt = createdAt,
+)
 
 fun FamilyDto.toEntity() = FamilyEntity(id, name, createdBy, createdAt, updatedAt)
 
@@ -215,4 +254,77 @@ fun com.familyguard.core.domain.model.LocationFix.toEntity(syncedAt: String? = n
 )
 fun LocationEntity.toDomain() = com.familyguard.core.domain.model.LocationFix(
     childId, deviceId, lat, lng, accuracyM, batteryPct, recordedAt,
+)
+
+// ---------------- M2b: inventory + blocks ----------------
+
+fun InstalledAppDto.toEntity() = InstalledAppEntity(
+    childId = childId,
+    deviceId = deviceId,
+    packageName = packageName,
+    appName = appName,
+    isSystem = isSystem,
+    versionName = versionName,
+    launchable = launchable,
+    iconSha = iconSha,
+    firstSeen = firstSeen,
+    lastSeen = lastSeen,
+    removedAt = removedAt,
+)
+
+fun InstalledAppEntity.toDomain() = InstalledApp(
+    childId = childId,
+    deviceId = deviceId,
+    packageName = packageName,
+    appName = appName,
+    isSystem = isSystem,
+    versionName = versionName,
+    launchable = launchable,
+    iconSha = iconSha,
+    firstSeen = firstSeen,
+    lastSeen = lastSeen,
+    removedAt = removedAt,
+)
+
+fun BlockedAppDto.toEntity() = BlockedAppEntity(
+    childId = childId,
+    packageName = packageName,
+    blocked = blocked,
+    version = version,
+    updatedBy = updatedBy,
+    updatedAt = updatedAt,
+)
+
+fun BlockedAppEntity.toDomain() = AppBlock(
+    childId = childId,
+    packageName = packageName,
+    blocked = blocked,
+    version = version,
+    updatedBy = updatedBy,
+    updatedAt = updatedAt,
+)
+
+// ---------------- M2c: uninstall requests ----------------
+
+fun UninstallRequestDto.toDomain() = UninstallRequest(
+    id = UUID.randomUUID().toString(),
+    childId = childId,
+    packageName = packageName,
+    appName = appName,
+    requestedBy = requestedBy,
+    status = runCatching { UninstallRequestStatus.valueOf(status.uppercase()) }.getOrDefault(UninstallRequestStatus.PENDING),
+    resultMessage = resultMessage,
+    createdAt = createdAt,
+    updatedAt = updatedAt,
+)
+
+fun UninstallRequest.toDto() = UninstallRequestDto(
+    childId = childId,
+    packageName = packageName,
+    appName = appName,
+    requestedBy = requestedBy,
+    status = status.name.lowercase(),
+    resultMessage = resultMessage,
+    createdAt = createdAt,
+    updatedAt = updatedAt,
 )

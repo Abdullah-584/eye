@@ -8,9 +8,12 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import androidx.room.Upsert
+import com.familyguard.core.database.entity.AdminEventEntity
 import com.familyguard.core.database.entity.AppLimitEntity
+import com.familyguard.core.database.entity.BlockedAppEntity
 import com.familyguard.core.database.entity.ChildEntity
 import com.familyguard.core.database.entity.DeviceEntity
+import com.familyguard.core.database.entity.InstalledAppEntity
 import com.familyguard.core.database.entity.FamilyEntity
 import com.familyguard.core.database.entity.LocationEntity
 import com.familyguard.core.database.entity.ScheduleEntity
@@ -139,6 +142,15 @@ interface TimeRequestDao {
 }
 
 @Dao
+interface AdminEventDao {
+    @Query("select * from admin_events where childId = :childId order by occurredAt desc")
+    fun observe(childId: String): Flow<List<AdminEventEntity>>
+
+    @Upsert
+    suspend fun upsertAll(events: List<AdminEventEntity>)
+}
+
+@Dao
 interface UsageDao {
     @Query("select * from usage_daily where childId = :childId order by day desc")
     fun observeAll(childId: String): Flow<List<UsageDailyEntity>>
@@ -215,3 +227,57 @@ interface SyncMetaDao {
     @Upsert
     suspend fun upsert(meta: SyncMetaEntity)
 }
+
+@Dao
+interface InstalledAppDao {
+    @Query("select * from installed_apps where childId = :childId order by appName")
+    fun observe(childId: String): Flow<List<InstalledAppEntity>>
+
+    @Query("select * from installed_apps where childId = :childId")
+    suspend fun getForChild(childId: String): List<InstalledAppEntity>
+
+    @Query("select * from installed_apps where deviceId = :deviceId")
+    suspend fun getForDevice(deviceId: String): List<InstalledAppEntity>
+
+    @Upsert
+    suspend fun upsertAll(apps: List<InstalledAppEntity>)
+
+    @Query("update installed_apps set removedAt = :at where deviceId = :deviceId and packageName in (:packages)")
+    suspend fun markRemoved(deviceId: String, packages: List<String>, at: String)
+
+    @Query("delete from installed_apps where deviceId = :deviceId")
+    suspend fun clearDevice(deviceId: String)
+}
+
+@Dao
+interface BlockedAppDao {
+    @Query("select * from blocked_apps where childId = :childId")
+    fun observe(childId: String): Flow<List<BlockedAppEntity>>
+
+    @Query("select * from blocked_apps where childId = :childId")
+    suspend fun getForChild(childId: String): List<BlockedAppEntity>
+
+    @Upsert
+    suspend fun upsertAll(blocks: List<BlockedAppEntity>)
+
+    @Query("delete from blocked_apps where childId = :childId and packageName not in (:keep)")
+    suspend fun deleteExcept(childId: String, keep: List<String>)
+}
+
+interface UninstallRequestDao {
+    @Query("select * from uninstall_requests where childId = :childId order by updated_at desc")
+    fun observe(childId: String): Flow<List<UninstallRequestEntity>>
+
+    @Query("select * from uninstall_requests where childId = :childId")
+    suspend fun getForChild(childId: String): List<UninstallRequestEntity>
+
+    @Upsert
+    suspend fun upsertAll(requests: List<UninstallRequestEntity>)
+
+    @Query("update uninstall_requests set status = :status, result_message = :resultMessage, updated_at = now() where id = :id")
+    suspend fun updateStatus(id: String, status: String, resultMessage: String?)
+
+    @Query("delete from uninstall_requests where childId = :childId")
+    suspend fun clearChild(childId: String)
+}
+

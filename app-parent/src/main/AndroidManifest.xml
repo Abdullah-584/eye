@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- The monitoring/location/notification permissions and the foreground
-         services themselves are declared in :service:enforcement and
-         :service:location so each module owns its policy surface; they merge
-         into this manifest (PLAN §6.1). -->
+    <!-- The parent app needs nothing beyond the network: usage access,
+         overlay, location and the foreground services are declared in
+         :service:enforcement / :service:location, which only :app-child
+         depends on (PLAN-SPLIT §2.5 / §7 M1). -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 

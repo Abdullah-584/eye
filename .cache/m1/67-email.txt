@@ -1,0 +1,7 @@
+resource-id="android:id/content"
+text="Sign in"
+text="paarent.emu3"
+text="Email"
+text="Password"
+text="Sign in"
+text="New here? Create an account"

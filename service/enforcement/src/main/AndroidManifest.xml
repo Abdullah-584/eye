@@ -15,6 +15,23 @@
         tools:ignore="ProtectedPermissions" />
 
     <application>
+        <!-- M2a device admin: the OS surface for "Parental controls active".
+             Activation only ever happens when the child taps the walkthrough
+             step and then ACTIVATES in the system dialog (PLAN M2 §2.1) —
+             nothing here initiates silently. -->
+        <receiver
+            android:name="com.familyguard.service.enforcement.FamilyGuardDeviceAdminReceiver"
+            android:exported="true"
+            android:permission="android.permission.BIND_DEVICE_ADMIN"
+            android:description="@string/admin_description">
+            <intent-filter>
+                <action android:name="android.app.admin.DEVICE_ADMIN_ENABLED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.app.admin.DEVICE_ADMIN_META_DATA"
+                android:resource="@xml/device_admin_familyguard" />
+        </receiver>
+
         <service
             android:name="com.familyguard.service.enforcement.EnforcementService"
             android:exported="false"
@@ -29,6 +46,20 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- M2b inventory backstop: PACKAGE_FULLY_REMOVED is on Android 8+'s
+             implicit-broadcast exemption list (PACKAGE_ADDED is NOT, which is
+             why live install detection is a runtime receiver inside the
+             foreground service). The package scheme is mandatory or the filter
+             never matches. -->
+        <receiver
+            android:name="com.familyguard.service.enforcement.PackageRemovedReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_FULLY_REMOVED" />
+                <data android:scheme="package" />
             </intent-filter>
         </receiver>
     </application>

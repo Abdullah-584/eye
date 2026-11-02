@@ -1,0 +1,8 @@
+resource-id="android:id/content"
+text="Sign in"
+text="parent.emu3@gmail.com"
+text="Email"
+text="••••••••••••••••"
+text="Password"
+text="Sign in"
+text="New here? Create an account"

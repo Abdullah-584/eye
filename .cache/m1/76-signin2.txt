@@ -1,0 +1,8 @@
+resource-id="android:id/content"
+text="Dashboard"
+text="Sync: offline changes only"
+text="Create a family to start setting limits."
+text="Create family"
+text="Dashboard"
+text="Requests"
+text="Settings"

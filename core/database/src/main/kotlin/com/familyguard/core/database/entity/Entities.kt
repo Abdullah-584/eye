@@ -4,8 +4,7 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
-/**
- * Room mirror of the Supabase schema (PLAN §M4 — "Room schema mirroring rules
+/** Room mirror of the Supabase schema (PLAN §M4 — "Room schema mirroring rules
  * tables"). Column names deliberately match the server so mapping is a field
  * rename. Every table is app-private; noBackupFilesDir is excluded at the
  * manifest level (PLAN §7.6).
@@ -130,6 +129,20 @@ data class UsageDailyEntity(
     val pickups: Int = 0,
 )
 
+@Entity(
+    tableName = "admin_events",
+    indices = [Index("childId")],
+)
+data class AdminEventEntity(
+    @PrimaryKey val id: String,
+    val childId: String,
+    val deviceId: String,
+    val eventType: String,
+    val occurredAt: String,
+    val parentAckAt: String? = null,
+    val createdAt: String = "",
+)
+
 /**
  * Raw usage facts pending upload. [syncedAt] null = still queued; the unique
  * key below mirrors the server's idempotency constraint so a retried batch
@@ -174,3 +187,66 @@ data class SyncMetaEntity(
     @PrimaryKey val tableName: String,
     val lastSyncAt: String = "",
 )
+
+ /** M2b — the device's reported inventory, keyed per (device, package) exactly
+  * like the server's `installed_apps` (a child can have two phones). Soft
+  * delete via `removedAt`: an uninstall/reinstall collapses to one upsert and
+  * `firstSeen` survives a reinstall.
+ */
+@Entity(
+    tableName = "installed_apps",
+    primaryKeys = ["deviceId", "packageName"],
+    indices = [Index("childId"), Index("deviceId")],
+)
+data class InstalledAppEntity(
+    val childId: String,
+    val deviceId: String,
+    val packageName: String,
+    val appName: String = "",
+    val isSystem: Boolean = false,
+    val versionName: String? = null,
+    val launchable: Boolean = true,
+    val iconSha: String? = null,
+    val firstSeen: String = "",
+    val lastSeen: String = "",
+    val removedAt: String? = null,
+)
+
+/** M2b — the parent's block intent, keyed per (child, package) like the
+ * server's `blocked_apps`. `version` is bumped server-side by the touch
+ * trigger; the Room write is guarded by it so an out-of-order realtime event
+ * cannot roll a toggle backwards.
+ */
+@Entity(
+    tableName = "blocked_apps",
+    primaryKeys = ["childId", "packageName"],
+    indices = [Index("childId")],
+)
+data class BlockedAppEntity(
+    val childId: String,
+    val packageName: String,
+    val blocked: Boolean = true,
+    val version: Int = 1,
+    val updatedBy: String? = null,
+    val updatedAt: String = "",
+)
+
+/** M2c — parent-initiated uninstall request. Unique on (child_id, package_name).
+ * `status` mirrors the server check constraint. Child may only update status;
+ * parent may create/update/delete within their family.
+ */
+@Entity(
+    tableName = "uninstall_requests",
+    primaryKeys = ["childId", "packageName"],
+    indices = [Index("childId")],
+)
+data class UninstallRequestEntity(
+    val childId: String,
+    val packageName: String,
+    val status: String = "pending",
+    val resultMessage: String? = null,
+    val createdAt: String = "",
+    val updatedAt: String = "",
+)
+
+/** End of entities. No more rows are expected in the Room schema. */

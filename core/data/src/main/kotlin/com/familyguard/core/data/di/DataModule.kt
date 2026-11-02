@@ -5,6 +5,9 @@ import androidx.room.Room
 import com.familyguard.core.database.FamilyGuardDatabase
 import com.familyguard.core.data.mode.ChildDeviceStore
 import com.familyguard.core.data.repo.AccountRepositoryImpl
+import com.familyguard.core.data.repo.AdminEventRepositoryImpl
+import com.familyguard.core.data.repo.AppBlockRepositoryImpl
+import com.familyguard.core.data.repo.AppInventoryRepositoryImpl
 import com.familyguard.core.data.repo.FamilyRepositoryImpl
 import com.familyguard.core.data.repo.LocationRepositoryImpl
 import com.familyguard.core.data.repo.PairingRepositoryImpl
@@ -12,6 +15,9 @@ import com.familyguard.core.data.repo.RulesRepositoryImpl
 import com.familyguard.core.data.repo.TimeRequestRepositoryImpl
 import com.familyguard.core.data.repo.UsageRepositoryImpl
 import com.familyguard.core.domain.repo.AccountRepository
+import com.familyguard.core.domain.repo.AdminEventRepository
+import com.familyguard.core.domain.repo.AppBlockRepository
+import com.familyguard.core.domain.repo.AppInventoryRepository
 import com.familyguard.core.domain.repo.FamilyRepository
 import com.familyguard.core.domain.repo.LocationRepository
 import com.familyguard.core.domain.repo.PairingRepository
@@ -43,6 +49,15 @@ object DataModule {
 
     @Provides
     fun provideFamilyRepository(impl: FamilyRepositoryImpl): FamilyRepository = impl
+
+    @Provides
+    fun provideAdminEventRepository(impl: AdminEventRepositoryImpl): AdminEventRepository = impl
+
+    @Provides
+    fun provideAppInventoryRepository(impl: AppInventoryRepositoryImpl): AppInventoryRepository = impl
+
+    @Provides
+    fun provideAppBlockRepository(impl: AppBlockRepositoryImpl): AppBlockRepository = impl
 
     @Provides
     fun provideRulesRepository(impl: RulesRepositoryImpl): RulesRepository = impl

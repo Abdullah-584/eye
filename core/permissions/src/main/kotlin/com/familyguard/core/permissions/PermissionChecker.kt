@@ -3,6 +3,8 @@ package com.familyguard.core.permissions
 import android.Manifest
 import android.app.AppOpsManager
 import android.app.NotificationManager
+import android.app.admin.DevicePolicyManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -11,6 +13,7 @@ import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
 import androidx.core.content.ContextCompat
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -22,6 +25,9 @@ enum class PermissionKind {
     BACKGROUND_LOCATION,
     NOTIFICATIONS,
     BATTERY_UNRESTRICTED,
+
+    /** M2a: the device admin is active ("Parental controls active"). */
+    DEVICE_ADMIN,
 }
 
 data class PermissionState(
@@ -38,7 +44,7 @@ data class PermissionState(
  */
 @Singleton
 class PermissionChecker @Inject constructor(
-    private val context: Context,
+    @ApplicationContext private val context: Context,
 ) {
     fun check(kind: PermissionKind): PermissionState = when (kind) {
         PermissionKind.USAGE_ACCESS -> PermissionState(kind, hasUsageAccess())
@@ -68,6 +74,10 @@ class PermissionChecker @Inject constructor(
             val pm = context.getSystemService(PowerManager::class.java)
             PermissionState(kind, pm?.isIgnoringBatteryOptimizations(context.packageName) == true)
         }
+        PermissionKind.DEVICE_ADMIN -> {
+            val dpm = context.getSystemService(DevicePolicyManager::class.java)
+            PermissionState(kind, dpm?.isAdminActive(adminComponent(context)) == true)
+        }
     }
 
     /** Settings deep-link for the step (PLAN §5.1). */
@@ -86,6 +96,10 @@ class PermissionChecker @Inject constructor(
                 .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
         PermissionKind.BATTERY_UNRESTRICTED ->
             Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}"))
+        // Launches the SYSTEM activation dialog. Nothing here activates in
+        // the background; the child taps "Activate" themselves (M2 §2.1).
+        PermissionKind.DEVICE_ADMIN -> Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
+            .putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponent(context))
     }
 
     private fun hasUsageAccess(): Boolean {
@@ -108,13 +122,31 @@ class PermissionChecker @Inject constructor(
     }
 
     companion object {
-        /** Order the child device walks during pairing (PLAN C7). */
+        /**
+         * M2a — the receiver this app declares lives in :service:enforcement
+         * (referenced by class name so :core:permissions stays free of an
+         * implementation dependency; CI asserts the two names agree).
+         */
+        const val ADMIN_RECEIVER_CLASSNAME =
+            "com.familyguard.service.enforcement.FamilyGuardDeviceAdminReceiver"
+
+        fun adminComponent(context: Context) =
+            ComponentName(context.packageName, ADMIN_RECEIVER_CLASSNAME)
+
+        /**
+         * Order the child device walks at M2a (M2-PLAN §1.2): usage access
+         * feeds everything downstream, the rest follow the plan's rationale,
+         * device admin last (the strongest ask, explained truthfully). The
+         * BACKGROUND step covers fine location first in the walkthrough UI.
+         * No longer carries BATTERY_UNRESTRICTED: the child-facing walkthrough
+         * is exactly the plan's five steps; the check stays for the parent.
+         */
         val CHILD_STEPS = listOf(
-            PermissionKind.NOTIFICATIONS,
             PermissionKind.USAGE_ACCESS,
+            PermissionKind.NOTIFICATIONS,
             PermissionKind.OVERLAY,
-            PermissionKind.FINE_LOCATION,
-            PermissionKind.BATTERY_UNRESTRICTED,
+            PermissionKind.BACKGROUND_LOCATION,
+            PermissionKind.DEVICE_ADMIN,
         )
 
         /** Order for the parent's own dashboard helpers. */

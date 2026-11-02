@@ -38,6 +38,7 @@ include(
     ":feature:pairing",
     ":feature:join",
     ":feature:rules",
+    ":feature:apps",
     ":feature:reports",
     ":feature:location",
     ":feature:requests",

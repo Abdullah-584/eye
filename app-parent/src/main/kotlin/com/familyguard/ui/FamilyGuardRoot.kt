@@ -24,6 +24,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.familyguard.R
+import com.familyguard.feature.apps.InstalledAppsScreen
 import com.familyguard.feature.family.AddChildScreen
 import com.familyguard.feature.family.CreateFamilyScreen
 import com.familyguard.feature.family.DevicesScreen
@@ -57,11 +58,13 @@ internal object Routes {
     const val ADD_CHILD = "add_child"
     const val DEVICES = "devices"
     const val RULES = "rules/{childId}"
+    const val APPS = "apps/{childId}"
     const val LOCATION = "location/{childId}"
     const val REPORTS = "reports/{childId}"
     const val PAIRING = "pairing/{childId}"
 
     fun rulesFor(childId: String) = "rules/$childId"
+    fun appsFor(childId: String) = "apps/$childId"
     fun locationFor(childId: String) = "location/$childId"
     fun reportsFor(childId: String) = "reports/$childId"
     fun pairingFor(childId: String) = "pairing/$childId"
@@ -107,7 +110,7 @@ fun FamilyGuardRoot(
                 if (currentRoute != Routes.CONFIRM) Routes.CONFIRM else null
 
             AuthPhase.SIGNED_IN ->
-                if (currentRoute !in TAB_ROUTES && currentRoute !in setOf(Routes.CREATE_FAMILY, Routes.ADD_CHILD, Routes.DEVICES, Routes.RULES, Routes.LOCATION, Routes.REPORTS, Routes.PAIRING)) {
+                if (currentRoute !in TAB_ROUTES && currentRoute !in setOf(Routes.CREATE_FAMILY, Routes.ADD_CHILD, Routes.DEVICES, Routes.RULES, Routes.APPS, Routes.LOCATION, Routes.REPORTS, Routes.PAIRING)) {
                     Routes.HOME
                 } else {
                     null
@@ -230,6 +233,9 @@ private fun AppNavHost(
                 onOpenRules = {
                     familyState.selectedChildId?.let { navController.navigate(Routes.rulesFor(it)) }
                 },
+                onOpenApps = {
+                    familyState.selectedChildId?.let { navController.navigate(Routes.appsFor(it)) }
+                },
                 onOpenLocation = {
                     familyState.selectedChildId?.let { navController.navigate(Routes.locationFor(it)) }
                 },
@@ -313,6 +319,11 @@ private fun AppNavHost(
         composable(Routes.RULES) { entry ->
             val childId = entry.arguments?.getString("childId") ?: return@composable
             RuleEditorsScreen(childId = childId, onBack = { navController.popBackStack() })
+        }
+
+        composable(Routes.APPS) { entry ->
+            val childId = entry.arguments?.getString("childId") ?: return@composable
+            InstalledAppsScreen(childId = childId, onBack = { navController.popBackStack() })
         }
 
         composable(Routes.LOCATION) { entry ->

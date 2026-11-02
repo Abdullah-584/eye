@@ -65,6 +65,9 @@ dependencies {
     implementation(project(":core:domain"))
     implementation(project(":core:network"))
     implementation(project(":core:data"))
+    // M2a: the shell consults the real permission state before letting the
+    // child into the hub (walkthrough gate).
+    implementation(project(":core:permissions"))
 
     // Child-only surface: join by code, the child hub, the block screen and
     // the two foreground services. No :core:auth, no parent features.

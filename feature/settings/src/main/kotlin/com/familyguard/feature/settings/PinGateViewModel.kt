@@ -14,6 +14,13 @@ import javax.inject.Inject
 
 /** What the gate screen renders (P6 + P18). */
 data class PinGateUiState(
+    /**
+     * False until the store has spoken: [pinSetUpKnown] flips to true on the
+     * first emission, and only then is [pinSetUp] meaningful. Until then the
+     * gate must show protected content to nobody — a default of `false` here
+     * would render the parent dashboard before DataStore catches up.
+     */
+    val pinSetUpKnown: Boolean = false,
     val pinSetUp: Boolean = false,
     val entered: String = "",
     val failedAttempts: Int = 0,
@@ -59,6 +66,7 @@ class PinGateViewModel @Inject constructor(
                 wasSetUp = setUp
                 mutable.update {
                     it.copy(
+                        pinSetUpKnown = true,
                         pinSetUp = setUp,
                         failedAttempts = lock.failedAttempts,
                         lockedUntilMs = lock.lockedUntilMs,

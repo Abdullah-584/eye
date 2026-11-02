@@ -79,6 +79,7 @@ dependencies {
     implementation(project(":feature:family"))
     implementation(project(":feature:pairing"))
     implementation(project(":feature:rules"))
+    implementation(project(":feature:apps"))
     implementation(project(":feature:requests"))
     implementation(project(":feature:location"))
     implementation(project(":feature:reports"))

@@ -3,9 +3,11 @@ package com.familyguard.service.enforcement
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.admin.DevicePolicyManager
 import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.BroadcastReceiver
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -18,7 +20,12 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.familyguard.core.data.mode.ChildDeviceRepository
+import com.familyguard.core.data.sync.InventoryWorker
 import com.familyguard.core.data.sync.SyncEngine
+import com.familyguard.core.domain.repo.AdminEventRepository
+import com.familyguard.core.domain.repo.AppBlockRepository
+import com.familyguard.core.domain.repo.AppInventoryRepository
+import com.familyguard.core.domain.repo.UninstallRequestRepository
 import com.familyguard.core.domain.enforcement.AppLimitView
 import com.familyguard.core.domain.enforcement.BlockReason
 import com.familyguard.core.domain.enforcement.EnforcementDecision
@@ -47,17 +54,20 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
-/**
- * M4/M5 — the child-device enforcement loop:
+/** M5 — the child-device enforcement loop.
  *
- *  1. every ~1 s: find the foreground package (UsageStats polling, PLAN §6.1 —
- *     deliberately *not* an AccessibilityService),
+ *  1. every ~1 s: find the foreground package (UsageStats polling, deliberately
+ *     not an AccessibilityService),
  *  2. feed today's usage + active schedules + per-app limits into the pure
  *     [EnforcementEngine] (unit-tested in :core:domain),
  *  3. on a blocking decision, raise [BlockActivity] over the offending app,
  *  4. record usage segments and flush the upload queue,
  *  5. heartbeat every 60 s so the parent's "device not reporting" card can
- *     tell the truth (PLAN §7.5: stale > 15 min).
+ *     tell the truth (PLAN §7.5: stale > 15 min),
+ *  6. M2a: sample the device-admin state every 5 s; on a transition, report
+ *     it as an `admin_events` row. We never re-activate the admin ourselves
+ *     and never obstruct the OS deactivation path — observe, report, tell
+ *     the truth in the notification.
  *
  * Runs only while this install is paired to a child; an unpaired install
  * stops itself the moment it is started.
@@ -70,6 +80,11 @@ class EnforcementService : LifecycleService() {
     @Inject lateinit var usageRepository: UsageRepository
     @Inject lateinit var pairingRepository: PairingRepository
     @Inject lateinit var syncEngine: SyncEngine
+    @Inject lateinit var adminEvents: AdminEventRepository
+    @Inject lateinit var appBlocks: AppBlockRepository
+    @Inject lateinit var appInventory: AppInventoryRepository
+    @Inject lateinit var uninstallRequestRepo: UninstallRequestRepository
+    @Inject lateinit var db: com.familyguard.core.database.FamilyGuardDatabase
 
     private val serviceScope = CoroutineScope(SupervisorJob())
 
@@ -82,11 +97,47 @@ class EnforcementService : LifecycleService() {
     @Volatile private var usedToday: Map<String, Long> = emptyMap()
     @Volatile private var screenOn: Boolean = true
 
+    // M2b: the parent's block set, observed from Room. Fed straight into the
+    // one EnforcementEngine.evaluate call — no second blocking path.
+    @Volatile private var blockedApps: Set<String> = emptySet()
+
     private var lastPackage: String? = null
     private var segmentStartMs: Long = System.currentTimeMillis()
     private var blockingPackage: String? = null
 
+    /** True/false once measured; null before the first admin sample. */
+    @Volatile private var adminActive: Boolean? = null
+
     private lateinit var usageStats: UsageStatsManager
+
+    // M2b: live install/remove detection. A runtime receiver inside this
+    // foreground service gets all three actions regardless of API level.
+    private val packageReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val action = intent?.action ?: return
+            when (action) {
+                Intent.ACTION_PACKAGE_ADDED,
+                Intent.ACTION_PACKAGE_REPLACED -> serviceScope.launch {
+                    runCatching { appInventory.reportScan() }
+                }
+                // M2c: handle system uninstall result for pending requests.
+                // Only mark as done if the request status is 'confirmed' (child
+                // confirmed the prompt before launching the system dialog).
+                Intent.ACTION_PACKAGE_REMOVED -> {
+                    val packageName = intent?.data?.getEncodedStringExtra("package") ?: return
+                    // Find the matching uninstall request and mark it done
+                    db.getForChild(childId!!).firstOrNull {
+                        it.packageName == packageName && it.status == "confirmed"
+                    }?.let { request ->
+                        // ACTION_PACKAGE_REMOVED fired, mark request as done
+                        uninstallRequestRepo.decide(request.id, true).onSuccess {
+                            // Refresh the local cache after success
+                        }.getOrNull()
+                    }
+                }
+            }
+        }
+    }
 
     private val screenReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -112,6 +163,13 @@ class EnforcementService : LifecycleService() {
         registerReceiver(screenReceiver, IntentFilter().apply {
             addAction(Intent.ACTION_SCREEN_OFF)
             addAction(Intent.ACTION_SCREEN_ON)
+        })
+        // M2b: package add/remove/replace, filtered to the "package" scheme.
+        registerReceiver(packageReceiver, IntentFilter().apply {
+            addAction(Intent.ACTION_PACKAGE_ADDED)
+            addAction(Intent.ACTION_PACKAGE_REMOVED)
+            addAction(Intent.ACTION_PACKAGE_REPLACED)
+            addDataScheme("package")
         })
     }
 
@@ -148,12 +206,24 @@ class EnforcementService : LifecycleService() {
 
             launch { rulesRepository.observeLimits(child).collect { limits = it } }
             launch { rulesRepository.observeSchedules(child).collect { schedules = it } }
+            // M2b: observe the block set; the enforcement loop reads the
+            // latest value every tick. Unblock drops the package immediately.
+            launch { appBlocks.observe(child).collect { rows ->
+                blockedApps = rows.filter { it.blocked }.map { it.packageName }.toSet()
+            } }
             launch {
                 rulesRepository.refresh(child)
                 usageRepository.observeUsage(child).collect { rows -> usedToday = toUsedToday(rows) }
             }
+            // M2b: first inventory report + the 6 h backstop. The live
+            // receiver handles the rest while this service runs.
+            launch {
+                InventoryWorker.schedule(this@EnforcementService)
+                runCatching { appInventory.reportScan() }
+            }
             launch { tickLoop() }
             launch { maintenanceLoop() }
+            launch { adminWatchLoop(child, device) }
         }
     }
 
@@ -190,7 +260,7 @@ class EnforcementService : LifecycleService() {
                 limits = limits.map { it.view() },
                 usedSecondsToday = usedToday,
                 activeSchedules = activeSchedules,
-                blockedApps = emptySet(),
+                blockedApps = blockedApps,
                 now = now,
                 zone = zone,
             )
@@ -207,12 +277,35 @@ class EnforcementService : LifecycleService() {
                             limitSeconds = decision.limitSeconds,
                             scheduleName = decision.scheduleName,
                             nextFreeAtMs = nextFreeAt(decision, now, zone),
-                        ),
+                        )
                     )
                 }
             } else {
                 blockingPackage = null
             }
+        }
+    }
+
+    /** M2a device-admin sampling. Baseline comes from the store, not from
+     * memory, so "activate on day 5, deactivate on day 9, app restarts on
+     * day 10" still reports the deactivation. Never re-activates; the row
+     * RLS leaves solely to the paired device (see the migration).
+     */
+    private suspend fun adminWatchLoop(childId: String, deviceId: String) {
+        val dpm = getSystemService(DevicePolicyManager::class.java)
+        val admin = ComponentName(this, FamilyGuardDeviceAdminReceiver::class.java)
+        while (true) {
+            val active = runCatching { dpm.isAdminActive(admin) }.getOrDefault(false)
+            val previous = childDevice.adminActiveOrNull()
+            if (AdminStateTransition.shouldReport(previous, active)) {
+                runCatching { adminEvents.report(childId, deviceId, active) }
+            }
+            if (previous != active) {
+                runCatching { childDevice.setDeviceAdminActive(active) }
+                adminActive = active
+                updateNotification()
+            }
+            delay(ADMIN_SAMPLE_MS)
         }
     }
 
@@ -222,6 +315,9 @@ class EnforcementService : LifecycleService() {
             delay(MAINTENANCE_MS)
             updateNotification()
             usageRepository.flushUploads()
+            // M2b belt-and-braces: a child offline when the parent toggled
+            // catches up here within one maintenance cycle (<=60 s).
+            childId?.let { runCatching { appBlocks.refresh(it) } }
             pairingRepository.heartbeat(
                 fcmToken = null,
                 appVersion = runCatching {
@@ -272,17 +368,17 @@ class EnforcementService : LifecycleService() {
     }
 
     /** Schedule end → next activation; limit end → local midnight. */
-    private fun nextFreeAt(decision: EnforcementDecision, now: Instant, zone: ZoneId): Long? =
+    private fun nextFreeAt(decision: EnforcementDecision, now: Instant, zone: ZoneId): Long? {
         when (decision.reason) {
             BlockReason.SCHEDULE -> {
                 val active = schedules.firstOrNull { it.name == decision.scheduleName }?.view()
                 active?.let { ScheduleEvaluator.nextActivation(it, now, zone) }?.toEpochMilli()
             }
-            BlockReason.LIMIT_REACHED ->
-                now.atZone(zone).toLocalDate().plusDays(1)
-                    .atStartOfDay(zone).toInstant().toEpochMilli()
+            BlockReason.LIMIT_REACHED -> now.atZone(zone).toLocalDate().plusDays(1)
+                .atStartOfDay(zone).toInstant().toEpochMilli()
             else -> null
         }
+    }
 
     private fun startAsForeground() {
         runCatching {
@@ -309,11 +405,18 @@ class EnforcementService : LifecycleService() {
     }
 
     private fun buildNotification(): Notification {
-        val activeRules = limits.count { it.enabled } + schedules.count { it.enabled }
+        val activeRules: Int = limits.count { it.enabled } + schedules.count { it.enabled }
+        // M2a: while device admin is off, the persistent indicator says so —
+        // "Parental controls active" would be a lie (M2-PLAN §1.3).
+        val text = if (adminActive == false) {
+            getString(R.string.notif_admin_off_text)
+        } else {
+            getString(R.string.notif_enforcement_text, activeRules)
+        }
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_lock_idle_low_battery)
             .setContentTitle(getString(R.string.notif_enforcement_title))
-            .setContentText(getString(R.string.notif_enforcement_text, activeRules))
+            .setContentText(text)
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
@@ -327,6 +430,7 @@ class EnforcementService : LifecycleService() {
 
     override fun onDestroy() {
         runCatching { unregisterReceiver(screenReceiver) }
+        runCatching { unregisterReceiver(packageReceiver) }
         syncEngine.stop()
         serviceScope.cancel()
         super.onDestroy()
@@ -350,6 +454,7 @@ class EnforcementService : LifecycleService() {
         private const val CHANNEL_ID = "enforcement"
         private const val NOTIFICATION_ID = 41
         private const val TICK_MS = 1_000L
+        private const val ADMIN_SAMPLE_MS = 5_000L
         private const val MAINTENANCE_MS = 60_000L
         private const val SEGMENT_MS = 60_000L
         private const val MIN_SEGMENT_MS = 5_000L

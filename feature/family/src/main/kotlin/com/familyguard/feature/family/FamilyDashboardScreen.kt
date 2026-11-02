@@ -53,6 +53,7 @@ fun FamilyDashboardScreen(
     onDismissBanner: () -> Unit,
     modifier: Modifier = Modifier,
     onOpenRules: (() -> Unit)? = null,
+    onOpenApps: (() -> Unit)? = null,
     onOpenLocation: (() -> Unit)? = null,
     onOpenReports: (() -> Unit)? = null,
 ) {
@@ -111,6 +112,7 @@ fun FamilyDashboardScreen(
                 onOpenRequests = onOpenRequests,
                 onOpenDevices = onOpenDevices,
                 onOpenRules = onOpenRules,
+                onOpenApps = onOpenApps,
                 onOpenLocation = onOpenLocation,
                 onOpenReports = onOpenReports,
             )
@@ -126,6 +128,7 @@ private fun DashboardContent(
     onOpenRequests: () -> Unit,
     onOpenDevices: () -> Unit,
     onOpenRules: (() -> Unit)? = null,
+    onOpenApps: (() -> Unit)? = null,
     onOpenLocation: (() -> Unit)? = null,
     onOpenReports: (() -> Unit)? = null,
 ) {
@@ -302,12 +305,17 @@ private fun DashboardContent(
     }
 
     // Child detail entry points (P10–P14) for the selected child.
-    if (onOpenRules != null || onOpenLocation != null || onOpenReports != null) {
+    if (onOpenRules != null || onOpenApps != null || onOpenLocation != null || onOpenReports != null) {
         Spacer(Modifier.height(12.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             onOpenRules?.let {
                 OutlinedButton(onClick = it, modifier = Modifier.weight(1f)) {
                     Text(stringResource(R.string.dashboard_action_rules))
+                }
+            }
+            onOpenApps?.let {
+                OutlinedButton(onClick = it, modifier = Modifier.weight(1f)) {
+                    Text(stringResource(R.string.dashboard_action_apps))
                 }
             }
             onOpenLocation?.let {

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -207,7 +208,17 @@ fun ParentGate(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    if (state.pinSetUp && !state.unlocked) {
+    if (!state.pinSetUpKnown) {
+        // The store has not answered yet. Content stays hidden until it does:
+        // showing [content] first would flash the parent dashboard (child
+        // names, usage) on screen for as long as DataStore takes to emit.
+        Box(
+            modifier = modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            CircularProgressIndicator()
+        }
+    } else if (state.pinSetUp && !state.unlocked) {
         val biometricNegative = stringResource(R.string.gate_biometric_negative)
 
         PinGateScreen(

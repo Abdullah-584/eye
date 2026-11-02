@@ -124,6 +124,15 @@ class LocationService : LifecycleService() {
             PackageManager.PERMISSION_GRANTED
 
     private fun requestUpdates() {
+        // The check is written out inline rather than as hasForegroundLocation():
+        // lint only credits a permission guard it can see in this method, and
+        // the user may revoke ACCESS_FINE/COARSE while the service is running.
+        val granted =
+            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
+                PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
+                    PackageManager.PERMISSION_GRANTED
+        if (!granted) return
         runCatching {
             locationManager.requestLocationUpdates(
                 LocationManager.GPS_PROVIDER,

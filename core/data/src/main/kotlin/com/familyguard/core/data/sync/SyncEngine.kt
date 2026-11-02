@@ -1,12 +1,19 @@
 package com.familyguard.core.data.sync
 
+import com.familyguard.core.data.dto.AdminEventDto
 import com.familyguard.core.data.dto.AppLimitDto
+import com.familyguard.core.data.dto.BlockedAppDto
+import com.familyguard.core.data.dto.InstalledAppDto
 import com.familyguard.core.data.dto.ScheduleDto
 import com.familyguard.core.data.dto.TimeRequestDto
 import com.familyguard.core.data.dto.WebFilterDto
 import com.familyguard.core.data.internal.toDomain
 import com.familyguard.core.data.internal.toEntity
 import com.familyguard.core.database.FamilyGuardDatabase
+import com.familyguard.core.domain.inventory.BlockedVersioning
+import com.familyguard.core.domain.repo.AdminEventRepository
+import com.familyguard.core.domain.repo.AppBlockRepository
+import com.familyguard.core.domain.repo.AppInventoryRepository
 import com.familyguard.core.domain.repo.RulesRepository
 import com.familyguard.core.domain.repo.TimeRequestRepository
 import io.github.jan.supabase.SupabaseClient
@@ -34,6 +41,24 @@ import javax.inject.Singleton
 
 enum class SyncState { IDLE, CONNECTING, LIVE, DEGRADED }
 
+/**
+ * Whether an already-built channel can still serve its topic, i.e. whether
+ * [SyncEngine.restart] may reuse it instead of building a fresh one.
+ *
+ * Losing the auth session (sign-out) makes realtime-kt call
+ * `Realtime.disconnect()`, which marks **every** subscribed channel
+ * UNSUBSCRIBED — and nothing re-joins it, because the socket only rejoins
+ * channels it still holds after a reconnect. Reusing such a channel would
+ * leave the parent dashboard on "Sync: reconnecting…" for the rest of the
+ * process's life, so anything other than SUBSCRIBED/SUBSCRIBING means
+ * "build a new one". `null` is the no-channel-yet case.
+ *
+ * Covered by `ChannelUsableTest`.
+ */
+internal fun channelUsable(status: RealtimeChannel.Status?): Boolean =
+    status == RealtimeChannel.Status.SUBSCRIBED ||
+        status == RealtimeChannel.Status.SUBSCRIBING
+
 private val syncJson = Json { ignoreUnknownKeys = true }
 
 /**
@@ -58,6 +83,9 @@ class SyncEngine @Inject constructor(
     private val db: FamilyGuardDatabase,
     private val rulesRepository: RulesRepository,
     private val timeRequests: TimeRequestRepository,
+    private val adminEvents: AdminEventRepository,
+    private val appInventory: AppInventoryRepository,
+    private val appBlocks: AppBlockRepository,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -109,33 +137,76 @@ class SyncEngine @Inject constructor(
                         syncJson.decodeFromJsonElement<TimeRequestDto>(rec).toDomain().toEntity(),
                     )
                 },
-            ) + listOf("app_limits", "schedules", "web_filters", "time_requests").map { table ->
+                // M2b: the parent's block intent. Version-guarded so an
+                // out-of-order event can never roll a toggle backwards.
+                ch.watch<PostgresAction.Insert>("blocked_apps", childId) { rec ->
+                    applyBlock(syncJson.decodeFromJsonElement(rec))
+                },
+                ch.watch<PostgresAction.Update>("blocked_apps", childId) { rec ->
+                    applyBlock(syncJson.decodeFromJsonElement(rec))
+                },
+            ) + listOf("app_limits", "schedules", "web_filters", "time_requests", "blocked_apps").map { table ->
                 ch.watchDelete(table, childId)
             }
         }
         scope.launch { deltaSync(childId) }
     }
 
-    /** Parent device: pending inbox + decisions live for a set of children. */
+    /** Parent device: pending inbox + decisions + M2a admin alerts. */
     fun startParentSync(childIds: List<String>) {
         if (childIds.isEmpty()) {
             scope.launch { mutex.withLock { stopLocked() } }
             return
         }
-        restart(childIds.joinToString(",", prefix = "family:")) { ch ->
-            childIds.flatMap { childId ->
+        restart(childIds.joinToString(",", prefix = "family:")) { ch ->            childIds.flatMap { childId ->
                 listOf(
                     ch.watch<PostgresAction.Insert>("time_requests", childId) { rec ->
                         db.timeRequestDao().upsert(
                             syncJson.decodeFromJsonElement<TimeRequestDto>(rec).toDomain().toEntity(),
                         )
                     },
-                    ch.watch<PostgresAction.Update>("time_requests", childId) { rec ->
+                    ch.watch<PostgresAction.Update>("time_requests", childId) {
+                        rec ->
                         db.timeRequestDao().upsert(
                             syncJson.decodeFromJsonElement<TimeRequestDto>(rec).toDomain().toEntity(),
                         )
                     },
                     ch.watchDelete("time_requests", childId),
+                    // M2a: device-admin alerts ride the same fast path (the
+                    // ack update also arrives here, keeping Room in step).
+                    ch.watch<PostgresAction.Insert>("admin_events", childId) { rec ->
+                        db.adminEventDao().upsertAll(
+                            listOf(
+                                syncJson.decodeFromJsonElement<AdminEventDto>(rec).toEntity(),
+                            ),
+                        )
+                    },
+                    ch.watch<PostgresAction.Update>("admin_events", childId) { rec ->
+                        db.adminEventDao().upsertAll(
+                            listOf(
+                                syncJson.decodeFromJsonElement<AdminEventDto>(rec).toEntity(),
+                            ),
+                        )
+                    },
+                    // M2b: the child's inventory lands live in the open
+                    // dashboard; block toggles from a second parent device too.
+                    ch.watch<PostgresAction.Insert>("installed_apps", childId) { rec ->
+                        db.installedAppDao().upsertAll(
+                            listOf(syncJson.decodeFromJsonElement<InstalledAppDto>(rec).toEntity()),
+                        )
+                    },
+                    ch.watch<PostgresAction.Update>("installed_apps", childId) { rec ->
+                        db.installedAppDao().upsertAll(
+                            listOf(syncJson.decodeFromJsonElement<InstalledAppDto>(rec).toEntity()),
+                        )
+                    },
+                    ch.watch<PostgresAction.Insert>("blocked_apps", childId) { rec ->
+                        applyBlock(syncJson.decodeFromJsonElement(rec))
+                    },
+                    ch.watch<PostgresAction.Update>("blocked_apps", childId) { rec ->
+                        applyBlock(syncJson.decodeFromJsonElement(rec))
+                    },
+                    ch.watchDelete("installed_apps", childId),
                 )
             }
         }
@@ -163,6 +234,9 @@ class SyncEngine @Inject constructor(
     suspend fun deltaSync(childId: String) {
         runCatching { rulesRepository.refresh(childId) }
         runCatching { timeRequests.refresh(childId) }
+        runCatching { adminEvents.refresh(childId) }
+        runCatching { appInventory.refresh(childId) }
+        runCatching { appBlocks.refresh(childId) }
     }
 
     // ------------------------------------------------------------------ impl
@@ -171,14 +245,24 @@ class SyncEngine @Inject constructor(
         // realtime-kt caches channels by topic and returns the *existing*
         // instance for a name it already knows, while postgresChangeFlow()
         // throws if it is called after that channel joined. Rebuilding a
-        // topic we already serve is therefore both useless (the handlers are
-        // still live) and fatal — so it is a no-op.
-        if (channel != null && this.channelKey == channelKey) return
+        // topic we already serve is therefore useless (the handlers are still
+        // live) — so it is a no-op, but ONLY while that channel is still
+        // healthy. A sign-out drops the websocket and leaves the cached
+        // channel UNSUBSCRIBED for good, so the same topic must be rebuilt.
+        if (channel != null && this.channelKey == channelKey &&
+            channelUsable(channel?.status?.value)
+        ) {
+            return
+        }
         scope.launch {
             mutex.withLock {
                 // Re-check: another caller may have set this topic up while we
                 // waited for the lock.
-                if (channel != null && this@SyncEngine.channelKey == channelKey) return@withLock
+                if (channel != null && this@SyncEngine.channelKey == channelKey &&
+                    channelUsable(channel?.status?.value)
+                ) {
+                    return@withLock
+                }
                 stopLocked()
                 _state.value = SyncState.CONNECTING
                 // A unique suffix guarantees realtime-kt builds a fresh
@@ -263,6 +347,15 @@ class SyncEngine @Inject constructor(
         val local = db.webFilterDao().getForChild(dto.childId).firstOrNull { it.id == dto.id }
         if (local == null || dto.version >= local.version) {
             db.webFilterDao().upsert(dto.toDomain().toEntity())
+        }
+    }
+
+    /** M2b: version-guarded block apply — same LWW rule as [applyLimit]. */
+    private suspend fun applyBlock(dto: BlockedAppDto) {
+        val local = db.blockedAppDao().getForChild(dto.childId)
+            .firstOrNull { it.packageName == dto.packageName }
+        if (BlockedVersioning.shouldApply(dto.version, local?.version)) {
+            db.blockedAppDao().upsertAll(listOf(dto.toEntity()))
         }
     }
 }

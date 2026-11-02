@@ -44,6 +44,10 @@ dependencies {
     implementation(libs.compose.ui.graphics)
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.compose.material3)
+    // The M2a walkthrough requests the fine-location runtime permission
+    // through the Activity Result API (the background switch is a Settings
+    // flow and must NOT be pre-granted by us; M2-PLAN §1.2 step 4).
+    implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.hilt.navigation.compose)
@@ -52,4 +56,6 @@ dependencies {
     kapt(libs.hilt.compiler)
 
     debugImplementation(libs.compose.ui.tooling)
+
+    testImplementation(libs.junit)
 }

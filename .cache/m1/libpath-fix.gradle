@@ -1,0 +1,19 @@
+gradle.projectsLoaded {
+    def lp = System.getProperty("java.library.path")
+    println "PROBE-QUOTES=" + (lp != null && lp.contains('"')) + " len=" + (lp == null ? -1 : lp.length())
+    System.setProperty("java.library.path", "C:/Windows/system32")
+}
+gradle.beforeProject { project ->
+    project.tasks.withType(Test).configureEach { t ->
+        try {
+            def provs = t.jvmArgumentProviders
+            def bad = provs.findAll { p -> p.asArguments().join(" ").contains("java.library.path") }
+            if (bad) {
+                provs.removeAll { p -> bad.contains(p) }
+                println "REMOVED-provider ${project.path}:${t.name} -> ${bad*.getClass()*.name}"
+            }
+        } catch (Throwable e) {
+            println "PROV-SKIP ${project.path}:${t.name} -> ${e}"
+        }
+    }
+}

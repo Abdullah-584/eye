@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -31,6 +32,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.familyguard.core.domain.model.AdminEvent
+import com.familyguard.core.domain.model.AdminEventType
 import com.familyguard.core.domain.model.TimeRequest
 
 /**
@@ -78,6 +81,22 @@ fun RequestsScreen(
                 }
             }
 
+            if (state.adminAlerts.isNotEmpty()) {
+                item {
+                    Text(
+                        stringResource(R.string.admin_alerts_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
+            items(state.adminAlerts, key = { "a" + it.id }) { event ->
+                AdminAlertCard(
+                    event = event,
+                    onAck = { viewModel.acknowledgeAdminEvent(event.id) },
+                )
+            }
+
             item {
                 Text(
                     stringResource(R.string.requests_pending),
@@ -95,6 +114,25 @@ fun RequestsScreen(
                         viewModel.decide(request.id, approve = true, grantedSeconds = seconds)
                     },
                     onDeny = { viewModel.decide(request.id, approve = false, grantedSeconds = null) },
+                )
+            }
+
+            // M2c: pending uninstall requests
+            item {
+                HorizontalDivider(Modifier.padding(vertical = 8.dp))
+                Text(
+                    stringResource(R.string.requests_uninstall_pending),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
+            if (state.uninstallRequests.isEmpty()) {
+                item { Text(stringResource(R.string.requests_uninstall_empty)) }
+            }
+            items(state.uninstallRequests, key = { "u" + it.id }) { request ->
+                UninstallRequestCard(
+                    request = request,
+                    onConfirm = { viewModel.confirmUninstall(request.id) },
+                    onDecline = { viewModel.declineUninstall(request.id) },
                 )
             }
 
@@ -175,6 +213,101 @@ private fun PendingCard(
     }
 }
 
+/**
+ * M2a — parent alert for a device-admin tamper event. "Got it" stamps
+ * parent_ack_at; the row stays in the DB as history but leaves this queue.
+ */
+@Composable
+private fun AdminAlertCard(event: AdminEvent, onAck: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer,
+        ),
+    ) {
+        Column(Modifier.padding(16.dp)) {                Text(
+                    when (event.eventType) {
+                        AdminEventType.DISABLED -> stringResource(
+                            R.string.admin_alert_disabled, event.deviceId,
+                        )
+                        AdminEventType.REENABLED -> stringResource(
+                            R.string.admin_alert_reenabled, event.deviceId,
+                        )
+                        else -> event.eventType
+                    },
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onErrorContainer,
+            )
+            Text(
+                event.occurredAt.take(16).replace('T', ' '),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onErrorContainer,
+            )
+            Button(
+                onClick = onAck,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+            ) {
+                Text(stringResource(R.string.admin_alert_ack))
+            }
+        }
+    }
+}
+
+@Composable
+private fun UninstallRequestCard(
+    request: UninstallRequest,
+    onConfirm: () -> Unit,
+    onDecline: () -> Unit,
+) {
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            Text(
+                request.appName,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                "Package: ${request.packageName}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                "Status: ${request.status.name}",
+                style = MaterialTheme.typography.bodySmall,
+                color = when (request.status) {
+                    UninstallRequestStatus.PENDING -> MaterialTheme.colorScheme.warning
+                    UninstallRequestStatus.CONFIRMED -> MaterialTheme.colorScheme.primary
+                    UninstallRequestStatus.DECLINED -> MaterialTheme.colorScheme.error
+                    else -> MaterialTheme.colorScheme.onSurfaceVariant,
+                },
+            )
+            if (request.status == UninstallRequestStatus.PENDING) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    OutlinedButton(
+                        onClick = onConfirm,
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Text(stringResource(R.string.requests_uninstall_confirm))
+                    }
+                    OutlinedButton(
+                        onClick = onDecline,
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Text(stringResource(R.string.requests_uninstall_decline))
+                    }
+                }
+            }
+        }
+    }
+}
+
 @Composable
 private fun HistoryRow(request: TimeRequest) {
     val status = when (request.status.name) {
@@ -190,4 +323,3 @@ private fun HistoryRow(request: TimeRequest) {
         supportingContent = { Text(status) },
         trailingContent = { Text(request.createdAt.take(16).replace('T', ' ')) },
     )
-}

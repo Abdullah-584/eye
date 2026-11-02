@@ -4,4 +4,20 @@
     <string name="channel_enforcement_desc">Shown while FamilyGuard is actively enforcing screen-time rules on this device.</string>
     <string name="notif_enforcement_title">FamilyGuard is active</string>
     <string name="notif_enforcement_text">%1$d rules currently enforced</string>
+
+    <!--
+      M2a device-admin wording. THE COUPLING CONTRACT (M2-PLAN §2.2, CI-checked):
+      the three placements a child can see — this description in the system
+      Settings/device-admin dialog, the walkthrough text in feature:childhub
+      (res values strings), and the persistent enforcement notification — must
+      each carry the same three facts:
+        1. "Parental controls active" is what the system shows,
+        2. uninstalling FamilyGuard is blocked while this is on,
+        3. the child CAN turn it off in Settings > Apps > Special access >
+           Device admin apps, and doing so notifies the parent.
+      No soft-pedaling: every placement states the deactivation path.
+    -->
+    <string name="admin_description">FamilyGuard parental controls. When active, this device is marked as \"Parental controls active\" and uninstalling FamilyGuard or clearing its data is blocked while this is on. You can turn this off any time in Settings &gt; Apps &gt; Special access &gt; Device admin apps — doing so allows uninstall and notifies your parent.</string>
+    <string name="admin_disable_requested_warning">Turning this off stops parental controls on this device and your parent gets notified. FamilyGuard can then be uninstalled.</string>
+    <string name="notif_admin_off_text">Device admin is off — uninstall is no longer blocked and your parent has been notified.</string>
 </resources>

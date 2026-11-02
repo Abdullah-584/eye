@@ -1,0 +1,4 @@
+gradle.projectsLoaded {
+    println "PROBE_LP=" + System.getProperty("java.library.path")
+    println "PROBE_PATH=" + System.getenv("PATH")
+}

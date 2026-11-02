@@ -1,0 +1,6 @@
+resource-id="android:id/content"
+text="Dashboard"
+text="Sync: live"
+text="Dashboard"
+text="Requests"
+text="Settings"

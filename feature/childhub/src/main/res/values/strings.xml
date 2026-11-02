@@ -48,4 +48,34 @@
     <string name="request_back_home">Done</string>
     <string name="request_denied">Your parent did not approve this request.</string>
     <string name="request_granted">Approved! The extra time is already added.</string>
+
+    <!-- M2a permission walkthrough. COUPLING CONTRACT (M2-PLAN §2.2, CI-checked):
+         this file and service:enforcement's admin_description string cover the
+         same three facts — 1) the system shows "Parental controls active", 2)
+         uninstalling FamilyGuard is blocked while the admin is on, 3) the child CAN
+         turn it off in Settings > Apps > Special access > Device admin apps, which
+         notifies the parent. Nothing is hidden. -->
+    <string name="walkthrough_title">Setting up protection</string>
+    <string name="walkthrough_progress">Step %1$d of %2$d</string>
+    <string name="walkthrough_open_settings">Open settings</string>
+    <string name="walkthrough_skip">Skip for now (this stays off)</string>
+    <string name="walkthrough_continue">Continue</string>
+    <string name="walkthrough_summary">Protection checklist</string>
+    <string name="walkthrough_summary_hint">Everything with a tick is on and helping your parents keep this device safe.</string>
+    <string name="walkthrough_done_yes">On</string>
+    <string name="walkthrough_done_no">Off</string>
+
+    <string name="perm_usage_title">App usage</string>
+    <string name="perm_usage_body">FamilyGuard needs to know which apps you open and for how long, so your parents can set screen-time limits. The app list is shared with them.</string>
+    <string name="perm_notifications_title">Notifications</string>
+    <string name="perm_notifications_body">A small notification stays on your screen with the words "Parental controls active" — because that is what is running. Blocking notices also arrive there.</string>
+    <string name="perm_overlay_title">Display over other apps</string>
+    <string name="perm_overlay_body">When one of your apps is blocked, FamilyGuard shows a full-screen notice explaining why. This permission lets that notice appear over the blocked app.</string>
+    <string name="perm_background_location_title">Location</string>
+    <string name="perm_background_location_body">Your parents can find this device on the map even when FamilyGuard is closed. That is why we ask for "Allow all the time" instead of "Only while using the app" — the second would silently stop the family map whenever you close the app.</string>
+    <string name="perm_background_location_allow_fine">Allow location access</string>
+    <string name="perm_background_location_allow_bg">Allow all the time</string>
+    <string name="perm_device_admin_title">Turn on Device Admin</string>
+    <string name="perm_device_admin_body">Activating this shows \"Parental controls active\" in your phone\'s settings and uninstalling FamilyGuard is blocked while it is on. Nothing is hidden from you — and you can still turn the admin off any time in Settings &gt; Apps &gt; Special access &gt; Device admin apps; your parent is notified right away when that happens.</string>
+    <string name="perm_device_admin_activate">Turn on Device Admin</string>
 </resources>

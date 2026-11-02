@@ -22,6 +22,7 @@ import androidx.navigation.compose.rememberNavController
 import com.familyguard.feature.childhub.ChildHomeScreen
 import com.familyguard.feature.childhub.ChildRulesScreen
 import com.familyguard.feature.childhub.ChildViewModel
+import com.familyguard.feature.childhub.PermissionWalkthroughScreen
 import com.familyguard.feature.childhub.RequestTimeScreen
 import com.familyguard.feature.childhub.WhatParentsSeeScreen
 import com.familyguard.feature.join.JoinScreen
@@ -31,14 +32,20 @@ import com.familyguard.service.location.LocationService
 private object Routes {
     const val SPLASH = "splash"
     const val JOIN = "join"
+    const val CHILD_PERMS = "child_perms"
     const val CHILD_HOME = "child_home"
     const val CHILD_RULES = "child_rules"
     const val CHILD_PRIVACY = "child_privacy"
     const val CHILD_REQUEST = "child_request"
 }
 
-private val CHILD_TERRITORY =
-    setOf(Routes.CHILD_HOME, Routes.CHILD_RULES, Routes.CHILD_PRIVACY, Routes.CHILD_REQUEST)
+private val CHILD_TERRITORY = setOf(
+    Routes.CHILD_PERMS,
+    Routes.CHILD_HOME,
+    Routes.CHILD_RULES,
+    Routes.CHILD_PRIVACY,
+    Routes.CHILD_REQUEST,
+)
 
 /**
  * Root of the **child** app (PLAN-SPLIT §2/§6).
@@ -55,6 +62,7 @@ fun ChildRoot(
     viewModel: ChildShellViewModel = hiltViewModel(),
 ) {
     val status by viewModel.status.collectAsStateWithLifecycle()
+    val permsPending by viewModel.permsPending.collectAsStateWithLifecycle()
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
@@ -81,15 +89,22 @@ fun ChildRoot(
         if (currentRoute == null) return@LaunchedEffect
         when (status) {
             PairingStatus.CHECKING -> Unit
-            PairingStatus.PAIRED ->
-                if (currentRoute !in CHILD_TERRITORY) {
-                    navController.navigateToRoot(Routes.CHILD_HOME)
-                }
-
             PairingStatus.NOT_PAIRED ->
                 if (currentRoute != Routes.JOIN) {
                     navController.navigateToRoot(Routes.JOIN)
                 }
+
+            PairingStatus.PAIRED -> when {
+                // M2a: the permission walkthrough completes before the hub.
+                permsPending && currentRoute != Routes.CHILD_PERMS ->
+                    navController.navigateToRoot(Routes.CHILD_PERMS)
+
+                !permsPending && currentRoute == Routes.CHILD_PERMS ->
+                    navController.navigateToRoot(Routes.CHILD_HOME)
+
+                !permsPending && currentRoute !in CHILD_TERRITORY ->
+                    navController.navigateToRoot(Routes.CHILD_HOME)
+            }
         }
     }
 
@@ -117,6 +132,12 @@ fun ChildRoot(
             // Pairing completes inside JoinViewModel; the status effect above
             // routes to the hub the moment the device row exists.
             JoinScreen(onJoined = {})
+        }
+
+        composable(Routes.CHILD_PERMS) {
+            PermissionWalkthroughScreen(
+                onDone = { navController.navigateToRoot(Routes.CHILD_HOME) },
+            )
         }
 
         composable(Routes.CHILD_HOME) {

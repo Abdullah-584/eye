@@ -32,6 +32,7 @@
     <string name="dashboard_action_requests">Time requests</string>
     <string name="dashboard_action_devices">Devices</string>
     <string name="dashboard_action_rules">Rules</string>
+    <string name="dashboard_action_apps">App Rules</string>
     <string name="dashboard_action_location">Location</string>
     <string name="dashboard_action_reports">Reports</string>
     <string name="dashboard_sync_live">Sync: live</string>

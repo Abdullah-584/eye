@@ -1,3 +1,4 @@
+import java.io.File
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -18,6 +19,21 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    testOptions {
+        unitTests.all {
+            // Forked Test JVMs do not inherit the daemon's org.gradle.jvmargs
+            // system properties, so pass the coupling-test root explicitly.
+            // A checked-in gradle.properties value can point at a checkout that
+            // no longer exists (per-thread workspaces); only honor it when the
+            // directory is real, otherwise the actual root is the correct root.
+            val declaredRoot = providers.gradleProperty("org.admin.string.root").orNull
+            val couplingRoot = declaredRoot
+                ?.takeIf { File(it, "gradle.properties").exists() }
+                ?: rootDir.absolutePath
+            it.systemProperty("org.admin.string.root", couplingRoot)
+        }
     }
 }
 

@@ -1,0 +1,7 @@
+resource-id="android:id/content"
+text="Add your child"
+text="Child’s name"
+text="Birth year (optional)"
+text="Asia/Karachi"
+text="Time zone"
+text="Add child"

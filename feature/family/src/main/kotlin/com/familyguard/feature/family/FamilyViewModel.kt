@@ -75,7 +75,12 @@ class FamilyViewModel @Inject constructor(
         selectedChild,
         combine(busy, banner, loading) { b, g, l -> Triple(b, g, l) },
         combine(devices, pendingCount, todaySeconds, syncEngine.state) { d, p, t, s -> Quadruple(d, p, t, s) },
-    ) { children, selected, (b, g, l), (d, p, t, s) ->
+        // family MUST be a combine source: a createFamily/refreshFamily only
+        // assigns familyFlow, and combine does not re-emit for a flow it is
+        // not subscribed to — without this the dashboard keeps rendering the
+        // "Create a family" empty state after the family was created.
+        familyFlow,
+    ) { children, selected, (b, g, l), (d, p, t, s), family ->
         // Keep parent realtime in step with the child list, but never churn
         // the channel: only restart when membership actually changes.
         val ids = children.map { it.id }
@@ -86,7 +91,7 @@ class FamilyViewModel @Inject constructor(
         val sel = selected ?: children.firstOrNull()?.id
         FamilyUiState(
             loading = l,
-            family = familyFlow.value,
+            family = family,
             children = children,
             selectedChildId = sel,
             devices = d,

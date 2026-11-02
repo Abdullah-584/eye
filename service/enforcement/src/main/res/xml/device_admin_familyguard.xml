@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  M2a device-admin policy.
+
+  Two principles (M2-PLAN §2.1/§2.2):
+  * Minimal set: <limit-password /> is declared so the receiver is a *valid*
+    device admin without granting any capability the child experiences; none
+    of the functions it names are exercised. We never use remote-wipe,
+    force-lock or camera-disable, which would read as surveillance knobs and
+    L1 the honest description below.
+  * The receiver is documented exactly where the system shows it: Settings ▸
+    Security ▸ Device admin apps reads the receiver's android:description.
+-->
+<device-admin xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-policies>
+        <limit-password />
+    </uses-policies>
+</device-admin>
